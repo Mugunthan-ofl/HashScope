@@ -123,8 +123,8 @@ export const AuditReportPage: React.FC = () => {
 
         <SummaryCard
           title="Avg Crack Time"
-          value={`${summary.avg_crack_time_seconds}s`}
-          subtitle={`Median: ${summary.median_crack_time_seconds}s`}
+          value={summary.cracked_count === 0 ? 'N/A' : `${summary.avg_crack_time_seconds}s`}
+          subtitle={summary.cracked_count === 0 ? 'Median: N/A' : `Median: ${summary.median_crack_time_seconds}s`}
           icon={Clock}
         />
 

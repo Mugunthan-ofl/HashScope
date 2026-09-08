@@ -238,7 +238,11 @@ class AuditService:
                         "breach": pr.breach_section.__dict__,
                     } for pr in policy_reports
                 ],
-                metadata={"engine": crack_engine.engine_name}
+                metadata={
+                    "engine": crack_engine.engine_name,
+                    "engine_status": crack_result.status,
+                    "engine_error": crack_result.error_message
+                }
             )
 
             job["status"] = "completed"

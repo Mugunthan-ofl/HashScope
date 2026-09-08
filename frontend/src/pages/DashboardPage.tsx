@@ -110,10 +110,10 @@ export const DashboardPage: React.FC = () => {
 
           <SummaryCard
             title="Avg Crack Time"
-            value={summary ? `${summary.avg_crack_time_seconds}s` : '0.00s'}
+            value={!summary || summary.cracked_count === 0 ? 'N/A' : `${summary.avg_crack_time_seconds}s`}
             subtitle="Mean cracking duration"
             icon={Clock}
-            badgeText="Median: 1.50s"
+            badgeText={!summary || summary.cracked_count === 0 ? 'Median: N/A' : `Median: ${summary.median_crack_time_seconds}s`}
             badgeType="neutral"
           />
 

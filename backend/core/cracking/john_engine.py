@@ -10,6 +10,7 @@ import time
 from typing import Any, List, Optional
 from backend.core.interfaces.crack_engine import CrackEngine, CrackResult, CrackedHash
 from backend.core.cracking.format_lookup import get_john_format
+from backend.core.cracking.wordlist_utils import resolve_wordlist_path
 
 
 class JohnEngine(CrackEngine):
@@ -51,11 +52,20 @@ class JohnEngine(CrackEngine):
                 error_message=str(e)
             )
 
+        # Count total input hashes from hash_file
+        total_input_hashes = 0
+        if os.path.exists(hash_file):
+            with open(hash_file, "r", encoding="utf-8", errors="ignore") as hf:
+                total_input_hashes = sum(1 for line in hf if line.strip())
+
+        # Resolve wordlist to absolute file path on disk
+        resolved_wordlist = resolve_wordlist_path(wordlist)
+
         # Build list-based command argument vector (never shell=True)
         cmd: List[str] = [
             self._binary_path,
             f"--format={fmt}",
-            f"--wordlist={wordlist}",
+            f"--wordlist={resolved_wordlist}",
             hash_file,
         ]
 
@@ -75,7 +85,7 @@ class JohnEngine(CrackEngine):
         except FileNotFoundError:
             return CrackResult(
                 engine_name=self.engine_name,
-                total_hashes=0,
+                total_hashes=total_input_hashes,
                 cracked_count=0,
                 status="tool_not_found",
                 error_message=f"John the Ripper binary not found at path '{self._binary_path}'."
@@ -83,7 +93,7 @@ class JohnEngine(CrackEngine):
         except subprocess.TimeoutExpired:
             return CrackResult(
                 engine_name=self.engine_name,
-                total_hashes=0,
+                total_hashes=total_input_hashes,
                 cracked_count=0,
                 execution_time_seconds=float(timeout),
                 status="timeout",
@@ -123,11 +133,17 @@ class JohnEngine(CrackEngine):
 
         return CrackResult(
             engine_name=self.engine_name,
-            total_hashes=len(cracked_items),
+            total_hashes=total_input_hashes,
             cracked_count=len(cracked_items),
             cracked_hashes=cracked_items,
             execution_time_seconds=elapsed_time,
             status="success" if res.returncode in [0, 1] else "error",
             error_message=res.stderr if res.returncode not in [0, 1] else None,
-            metadata={"returncode": res.returncode, "algorithm": algorithm, "format": fmt}
+            metadata={
+                "returncode": res.returncode,
+                "algorithm": algorithm,
+                "format": fmt,
+                "wordlist": resolved_wordlist
+            }
         )
+

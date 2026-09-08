@@ -10,7 +10,10 @@ from backend.api.schemas.audit import (
     AuditConfig,
     AuditStatusResponse,
     AuditReportResponse,
+    EngineCheckResponse,
+    EngineConfigSchema,
 )
+from backend.core.config_manager import get_engine_binary_paths, update_engine_binary_paths
 from backend.services.audit_service import AuditService
 
 router = APIRouter(prefix="/audit", tags=["Audit"])
@@ -28,6 +31,40 @@ def get_audit_service() -> AuditService:
 async def get_wordlists():
     """Retrieves available dictionary wordlists for cracking engine selection."""
     return ["rockyou.txt", "default.txt", "top1000.txt", "passwords.txt"]
+
+
+@router.get("/engines/check", response_model=EngineCheckResponse)
+async def check_engines(
+    audit_service: AuditService = Depends(get_audit_service),
+):
+    """Checks whether Hashcat and John the Ripper binaries are found and reports detected versions or checked paths."""
+    res = audit_service.check_engines()
+    return EngineCheckResponse(**res)
+
+
+@router.get("/engines/config", response_model=EngineConfigSchema)
+async def get_engine_config():
+    """Retrieves currently configured custom binary paths for cracking engines."""
+    paths = get_engine_binary_paths()
+    return EngineConfigSchema(
+        hashcat_binary_path=paths.get("hashcat_binary_path", ""),
+        john_binary_path=paths.get("john_binary_path", "")
+    )
+
+
+@router.post("/engines/config", response_model=EngineCheckResponse)
+async def update_engine_config(
+    payload: EngineConfigSchema,
+    audit_service: AuditService = Depends(get_audit_service),
+):
+    """Updates custom binary paths in config.yaml and re-runs binary detection check."""
+    update_engine_binary_paths(
+        hashcat_path=payload.hashcat_binary_path,
+        john_path=payload.john_binary_path
+    )
+    res = audit_service.check_engines()
+    return EngineCheckResponse(**res)
+
 
 
 @router.post("", response_model=AuditStatusResponse, status_code=status.HTTP_202_ACCEPTED)
@@ -85,3 +122,40 @@ async def get_audit_report(
         )
 
     return report_res
+
+
+@router.get("/{audit_id}/export")
+async def export_audit_report(
+    audit_id: str,
+    format: str = "html",
+    audit_service: AuditService = Depends(get_audit_service),
+):
+    """Exports audit report in standalone HTML format as a downloadable file attachment."""
+    status_res = audit_service.get_status(audit_id)
+    if not status_res:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Audit job '{audit_id}' not found."
+        )
+
+    if status_res.status != "completed":
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=f"Audit job '{audit_id}' status is '{status_res.status}'. Export unavailable."
+        )
+
+    html_content = audit_service.export_report(audit_id, format_type=format)
+    if not html_content:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to generate export file for audit '{audit_id}'."
+        )
+
+    from fastapi.responses import Response
+    return Response(
+        content=html_content,
+        media_type="text/html",
+        headers={
+            "Content-Disposition": f'attachment; filename="hashscope_audit_{audit_id}.html"'
+        }
+    )

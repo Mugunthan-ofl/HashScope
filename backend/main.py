@@ -35,8 +35,27 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+from backend.core.cracking.binary_resolver import check_all_engines
+from backend.core.config_manager import get_engine_binary_paths
+
 # Include API routes
 app.include_router(audit_router, prefix="/api/v1")
+
+
+@app.on_event("startup")
+async def startup_event():
+    """Startup validation checking cracking engine installations."""
+    paths = get_engine_binary_paths()
+    res = check_all_engines(
+        custom_hashcat_path=paths.get("hashcat_binary_path"),
+        custom_john_path=paths.get("john_binary_path"),
+    )
+    for engine_key, info in res.items():
+        if info["status"] == "found":
+            print(f"[HashScope Startup] Engine '{info['engine']}': FOUND ({info['version']}) at '{info['binary_path']}'")
+        else:
+            print(f"[HashScope Startup] Engine '{info['engine']}': NOT FOUND. Checked: {info['checked_paths']}")
+
 
 
 @app.get("/health", tags=["Health"])

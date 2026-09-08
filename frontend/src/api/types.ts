@@ -83,3 +83,22 @@ export interface BackendHealthResponse {
   service: string;
   version: string;
 }
+
+export interface EngineCheckItem {
+  engine: string;
+  status: 'found' | 'not_found';
+  binary_path?: string | null;
+  version?: string | null;
+  checked_paths: string[];
+}
+
+export interface EngineCheckResponse {
+  hashcat: EngineCheckItem;
+  john: EngineCheckItem;
+}
+
+export interface EngineConfigPayload {
+  hashcat_binary_path?: string;
+  john_binary_path?: string;
+}
+

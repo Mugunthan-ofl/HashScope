@@ -10,6 +10,7 @@ import subprocess
 import time
 from typing import Any, List, Optional
 from backend.core.interfaces.crack_engine import CrackEngine, CrackResult, CrackedHash
+from backend.core.cracking.binary_resolver import resolve_engine_binary
 from backend.core.cracking.format_lookup import get_hashcat_mode
 from backend.core.cracking.wordlist_utils import resolve_wordlist_path
 
@@ -19,7 +20,7 @@ logger = logging.getLogger(__name__)
 class HashcatEngine(CrackEngine):
     """Hashcat CLI wrapper implementing CrackEngine."""
 
-    def __init__(self, binary_path: str = "hashcat"):
+    def __init__(self, binary_path: Optional[str] = None):
         self._binary_path = binary_path
 
     @property
@@ -61,13 +62,29 @@ class HashcatEngine(CrackEngine):
             with open(hash_file, "r", encoding="utf-8", errors="ignore") as hf:
                 total_input_hashes = sum(1 for line in hf if line.strip())
 
+        # Resolve binary path via 3-tier lookup
+        resolved_bin, checked_paths, version = resolve_engine_binary("hashcat", self._binary_path)
+        if not resolved_bin:
+            err_msg = (
+                f"Hashcat binary not found. Checked: [{', '.join(checked_paths)}]. "
+                "Specify a custom binary path in Settings or verify installation."
+            )
+            logger.error(err_msg)
+            return CrackResult(
+                engine_name=self.engine_name,
+                total_hashes=total_input_hashes,
+                cracked_count=0,
+                status="tool_not_found",
+                error_message=err_msg
+            )
+
         # Resolve wordlist to a verified absolute path on disk
         resolved_wordlist = resolve_wordlist_path(wordlist)
 
         # Build list-based command argument vector (never shell=True)
         out_file = f"{hash_file}.cracked"
         cmd: List[str] = [
-            self._binary_path,
+            resolved_bin,
             "-m", str(mode),
             "-a", "0",  # Dictionary attack mode
             "--potfile-disable",  # Ensure potfile lookup doesn't suppress output
@@ -94,58 +111,97 @@ class HashcatEngine(CrackEngine):
                 text=True
             )
             elapsed_time = time.time() - start_time
-        except FileNotFoundError:
+        except FileNotFoundError as e:
+            err_msg = (
+                f"Hashcat binary not found at resolved path '{resolved_bin}'. "
+                f"Checked: [{', '.join(checked_paths)}]."
+            )
+            logger.error(err_msg)
             return CrackResult(
                 engine_name=self.engine_name,
                 total_hashes=total_input_hashes,
                 cracked_count=0,
                 status="tool_not_found",
-                error_message=f"Hashcat binary not found at path '{self._binary_path}'."
+                error_message=err_msg
             )
-        except subprocess.TimeoutExpired:
+        except subprocess.TimeoutExpired as e:
+            err_msg = f"Hashcat run timed out after {timeout} seconds."
+            logger.error(err_msg)
             return CrackResult(
                 engine_name=self.engine_name,
                 total_hashes=total_input_hashes,
                 cracked_count=0,
                 execution_time_seconds=float(timeout),
                 status="timeout",
-                error_message=f"Hashcat run timed out after {timeout} seconds."
+                error_message=err_msg
+            )
+        except Exception as e:
+            err_msg = f"Subprocess error executing Hashcat: {str(e)}"
+            logger.error(err_msg)
+            return CrackResult(
+                engine_name=self.engine_name,
+                total_hashes=total_input_hashes,
+                cracked_count=0,
+                status="execution_error",
+                error_message=err_msg
+            )
+
+        if res.returncode not in [0, 1]:
+            err_msg = f"Hashcat process failed with exit code {res.returncode}: {res.stderr or res.stdout}"
+            logger.error(err_msg)
+            return CrackResult(
+                engine_name=self.engine_name,
+                total_hashes=total_input_hashes,
+                cracked_count=0,
+                status="execution_error",
+                error_message=err_msg
             )
 
         # Parse cracked output file and stdout streams
         cracked_items: List[CrackedHash] = []
         raw_lines: List[str] = []
 
-        if os.path.exists(out_file):
-            with open(out_file, "r", encoding="utf-8", errors="ignore") as f:
-                raw_lines.extend(f.readlines())
-            try:
-                os.remove(out_file)
-            except OSError:
-                pass
+        try:
+            if os.path.exists(out_file):
+                with open(out_file, "r", encoding="utf-8", errors="ignore") as f:
+                    raw_lines.extend(f.readlines())
+                try:
+                    os.remove(out_file)
+                except OSError:
+                    pass
 
-        if res.stdout:
-            raw_lines.extend(res.stdout.splitlines())
+            if res.stdout:
+                raw_lines.extend(res.stdout.splitlines())
 
-        seen_hashes = set()
-        for line in raw_lines:
-            line = line.strip()
-            if not line:
-                continue
-            if ":" in line:
-                parts = line.split(":", 1)
-                h_val, p_text = parts[0].strip(), parts[1].strip()
-                if h_val not in seen_hashes:
-                    seen_hashes.add(h_val)
-                    cracked_items.append(
-                        CrackedHash(
-                            hash_value=h_val,
-                            cracked=True,
-                            plaintext=p_text,
-                            crack_time_seconds=elapsed_time,
-                            hash_type=algorithm
+            seen_hashes = set()
+            for line in raw_lines:
+                line = line.strip()
+                if not line:
+                    continue
+                if ":" in line:
+                    parts = line.split(":", 1)
+                    h_val, p_text = parts[0].strip(), parts[1].strip()
+                    if h_val not in seen_hashes:
+                        seen_hashes.add(h_val)
+                        cracked_items.append(
+                            CrackedHash(
+                                hash_value=h_val,
+                                cracked=True,
+                                plaintext=p_text,
+                                crack_time_seconds=elapsed_time,
+                                hash_type=algorithm
+                            )
                         )
-                    )
+        except Exception as parse_err:
+            err_msg = f"Failed to parse Hashcat output stream: {str(parse_err)}"
+            logger.error(err_msg)
+            return CrackResult(
+                engine_name=self.engine_name,
+                total_hashes=total_input_hashes,
+                cracked_count=0,
+                status="result_parse_error",
+                error_message=err_msg
+            )
 
         return CrackResult(
             engine_name=self.engine_name,
@@ -153,8 +209,8 @@ class HashcatEngine(CrackEngine):
             cracked_count=len(cracked_items),
             cracked_hashes=cracked_items,
             execution_time_seconds=elapsed_time,
-            status="success" if res.returncode in [0, 1] else "error",
-            error_message=res.stderr if res.returncode not in [0, 1] else None,
+            status="success",
+            error_message=None,
             metadata={
                 "returncode": res.returncode,
                 "algorithm": algorithm,

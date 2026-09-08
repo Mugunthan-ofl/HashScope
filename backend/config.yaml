@@ -1,20 +1,16 @@
-# HashScope Configuration
-
 app:
-  title: "HashScope API"
-  version: "0.1.0"
+  title: HashScope API
+  version: 0.1.0
   debug: true
-
 engines:
   hashcat:
-    binary_path: "hashcat"
+    binary_path: C:\Users\Mugunthan\AppData\Local\Temp\pytest-of-Mugunthan\pytest-2\test_engine_config_api_endpoin0\hashcat.exe
     default_workload_profile: 3
     timeout_seconds: 300
   john:
-    binary_path: "john"
-    default_format: "raw-md5"
+    binary_path: ''
+    default_format: raw-md5
     timeout_seconds: 300
-
 policy:
   min_length: 12
   require_uppercase: true
@@ -22,10 +18,8 @@ policy:
   require_digits: true
   require_symbols: true
   max_repeated_chars: 3
-
 scoring:
   zxcvbn_min_score: 3
   min_entropy_bits: 50.0
-
 reporting:
-  default_format: "json"
+  default_format: json

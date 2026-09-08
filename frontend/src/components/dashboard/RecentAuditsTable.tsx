@@ -1,18 +1,33 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { AuditHistoryItem, useSettings } from '../../context/SettingsContext';
-import { ArrowRight, Clock, CheckCircle2, AlertCircle, Trash2 } from 'lucide-react';
+import { ConfirmModal } from '../common/ConfirmModal';
+import { ArrowRight, Clock, CheckCircle2, Trash2, XCircle } from 'lucide-react';
 
 interface RecentAuditsTableProps {
   audits: AuditHistoryItem[];
 }
 
 export const RecentAuditsTable: React.FC<RecentAuditsTableProps> = ({ audits }) => {
-  const { clearAuditHistory } = useSettings();
+  const { clearAuditHistory, removeAuditFromHistory } = useSettings();
+  const [confirmClearOpen, setConfirmClearOpen] = useState(false);
+  const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
 
   if (audits.length === 0) {
     return null;
   }
+
+  const handleConfirmClearAll = () => {
+    clearAuditHistory();
+    setConfirmClearOpen(false);
+  };
+
+  const handleConfirmDeleteSingle = () => {
+    if (deleteTargetId) {
+      removeAuditFromHistory(deleteTargetId);
+      setDeleteTargetId(null);
+    }
+  };
 
   return (
     <div className="bg-[#101719] border border-[#1b282a] rounded-xl overflow-hidden shadow-lg shadow-black/40">
@@ -25,7 +40,7 @@ export const RecentAuditsTable: React.FC<RecentAuditsTableProps> = ({ audits }) 
         </div>
         <div className="flex items-center gap-3">
           <button
-            onClick={clearAuditHistory}
+            onClick={() => setConfirmClearOpen(true)}
             className="text-[11px] font-mono text-slate-400 hover:text-red-400 flex items-center gap-1 transition-colors cursor-pointer"
             title="Clear all stored audit runs from browser cache"
           >
@@ -49,7 +64,7 @@ export const RecentAuditsTable: React.FC<RecentAuditsTableProps> = ({ audits }) 
               <th className="px-5 py-3 font-semibold">Engine</th>
               <th className="px-5 py-3 font-semibold">Status</th>
               <th className="px-5 py-3 font-semibold">Cracked Ratio</th>
-              <th className="px-5 py-3 font-semibold text-right">Action</th>
+              <th className="px-5 py-3 font-semibold text-right">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-[#1b282a]/60 text-slate-300">
@@ -65,7 +80,7 @@ export const RecentAuditsTable: React.FC<RecentAuditsTableProps> = ({ audits }) 
                     </span>
                   ) : item.status === 'failed' ? (
                     <span className="inline-flex items-center gap-1.5 text-red-400">
-                      <AlertCircle className="w-3.5 h-3.5" /> Failed
+                      <XCircle className="w-3.5 h-3.5" /> Failed
                     </span>
                   ) : (
                     <span className="inline-flex items-center gap-1.5 text-amber-400">
@@ -82,19 +97,45 @@ export const RecentAuditsTable: React.FC<RecentAuditsTableProps> = ({ audits }) 
                     <span className="text-slate-500">-</span>
                   )}
                 </td>
-                <td className="px-5 py-3.5 text-right">
+                <td className="px-5 py-3.5 text-right flex items-center justify-end gap-2">
                   <Link
                     to={`/audit/${item.audit_id}`}
                     className="px-3 py-1 bg-[#182427] hover:bg-[#203034] text-slate-200 rounded border border-[#233538] transition-colors inline-block"
                   >
                     View Report
                   </Link>
+                  <button
+                    onClick={() => setDeleteTargetId(item.audit_id)}
+                    className="p-1 text-slate-500 hover:text-red-400 transition-colors rounded hover:bg-[#203034]"
+                    title="Remove from history"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
+
+      {/* Confirmation Modals */}
+      <ConfirmModal
+        isOpen={confirmClearOpen}
+        title="Clear All Stored Audit Runs?"
+        message="Are you sure you want to delete all audit run history entries from your browser history? This action cannot be undone."
+        confirmLabel="Clear All Runs"
+        onConfirm={handleConfirmClearAll}
+        onCancel={() => setConfirmClearOpen(false)}
+      />
+
+      <ConfirmModal
+        isOpen={deleteTargetId !== null}
+        title="Delete Audit Run Entry?"
+        message={`Are you sure you want to delete '${deleteTargetId}' from history? This action cannot be undone.`}
+        confirmLabel="Delete Audit"
+        onConfirm={handleConfirmDeleteSingle}
+        onCancel={() => setDeleteTargetId(null)}
+      />
     </div>
   );
 };

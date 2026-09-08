@@ -20,8 +20,17 @@ from backend.api.schemas.audit import (
 )
 from backend.core.hashing.hash_generator import generate_test_hashes, HashRecord
 from backend.core.interfaces.crack_engine import CrackEngine, CrackResult, CrackedHash
+from backend.core.cracking.binary_resolver import check_all_engines
+from backend.core.config_manager import get_engine_binary_paths, update_engine_binary_paths
 from backend.core.cracking.hashcat_engine import HashcatEngine
 from backend.core.cracking.john_engine import JohnEngine
+from backend.core.cracking.exceptions import (
+    CrackingEngineError,
+    EngineNotFoundError,
+    EngineTimeoutError,
+    EngineExecutionError,
+    ResultParseError,
+)
 from backend.core.scoring.strength_scorer import StrengthScorer
 from backend.core.scoring.entropy_scorer import EntropyScorer
 from backend.core.policy.policy_report import PolicyEvaluator, PolicyReport
@@ -74,6 +83,15 @@ class AuditService:
         self._strength_scorer = StrengthScorer()
         self._entropy_scorer = EntropyScorer()
 
+    def check_engines(
+        self, custom_hashcat_path: Optional[str] = None, custom_john_path: Optional[str] = None
+    ) -> Dict[str, Any]:
+        """Runs engine binary detection check using configured or provided custom binary paths."""
+        configured = get_engine_binary_paths()
+        h_path = custom_hashcat_path if custom_hashcat_path is not None else configured.get("hashcat_binary_path")
+        j_path = custom_john_path if custom_john_path is not None else configured.get("john_binary_path")
+        return check_all_engines(custom_hashcat_path=h_path, custom_john_path=j_path)
+
     def start_audit_job(self, config: AuditConfig, background_tasks: BackgroundTasks) -> AuditStatusResponse:
         """Assigns audit_id, initializes audit state, and schedules pipeline execution in background."""
         audit_id = f"audit_{uuid.uuid4().hex[:8]}"
@@ -116,6 +134,8 @@ class AuditService:
 
             # 2. Select & Run Cracking Engine
             crack_engine: CrackEngine
+            engine_paths = get_engine_binary_paths()
+
             if config.engine == "mock":
                 crack_engine = MockCrackEngine()
                 crack_result = crack_engine.run(
@@ -124,7 +144,7 @@ class AuditService:
                     hash_records=hash_records
                 )
             elif config.engine == "john":
-                crack_engine = JohnEngine()
+                crack_engine = JohnEngine(binary_path=engine_paths.get("john_binary_path"))
                 # Create temporary hash file for John
                 with tempfile.NamedTemporaryFile(mode="w", delete=False, suffix=".hash") as tf:
                     for rec in hash_records:
@@ -142,7 +162,7 @@ class AuditService:
                         os.remove(temp_hash_path)
             else:
                 # Default to Hashcat
-                crack_engine = HashcatEngine()
+                crack_engine = HashcatEngine(binary_path=engine_paths.get("hashcat_binary_path"))
                 with tempfile.NamedTemporaryFile(mode="w", delete=False, suffix=".hash") as tf:
                     for rec in hash_records:
                         tf.write(f"{rec.hash_value}\n")
@@ -157,6 +177,17 @@ class AuditService:
                 finally:
                     if os.path.exists(temp_hash_path):
                         os.remove(temp_hash_path)
+
+            if crack_result.status != "success":
+                err_msg = crack_result.error_message or f"Engine '{crack_engine.engine_name}' reported failure state '{crack_result.status}'."
+                if crack_result.status == "tool_not_found":
+                    raise EngineNotFoundError(err_msg, engine_name=crack_engine.engine_name)
+                elif crack_result.status == "timeout":
+                    raise EngineTimeoutError(err_msg, engine_name=crack_engine.engine_name)
+                elif crack_result.status == "result_parse_error":
+                    raise ResultParseError(err_msg, engine_name=crack_engine.engine_name)
+                else:
+                    raise EngineExecutionError(err_msg, engine_name=crack_engine.engine_name)
 
             job["progress_percent"] = 60.0
 
@@ -275,3 +306,10 @@ class AuditService:
         if not job:
             return None
         return job.get("report_response")
+
+    def export_report(self, audit_id: str, format_type: str = "html") -> Optional[str]:
+        """Exports audit report in specified format (e.g. standalone HTML)."""
+        report_res = self.get_report(audit_id)
+        if not report_res:
+            return None
+        return self._report_service.generate_html_report(report_res)

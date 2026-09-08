@@ -1,5 +1,5 @@
 import React from 'react';
-import { Menu, Activity } from 'lucide-react';
+import { Menu, Activity, CheckCircle2, XCircle } from 'lucide-react';
 import { useSettings } from '../../context/SettingsContext';
 
 interface HeaderProps {
@@ -31,11 +31,11 @@ export const Header: React.FC<HeaderProps> = ({ onToggleSidebar, title }) => {
           <Activity className="w-3.5 h-3.5 text-slate-400" />
           {isBackendOnline === true ? (
             <span className="text-[#10b981] flex items-center gap-1.5 font-semibold">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#10b981] animate-pulse"></span> Engine Ready
+              <CheckCircle2 className="w-3.5 h-3.5 text-[#10b981]" /> Engine Ready
             </span>
           ) : isBackendOnline === false ? (
             <span className="text-red-400 flex items-center gap-1.5 font-semibold">
-              <span className="w-1.5 h-1.5 rounded-full bg-red-400"></span> Engine Unavailable
+              <XCircle className="w-3.5 h-3.5 text-red-400" /> Engine Unavailable
             </span>
           ) : (
             <span className="text-slate-400 font-medium">Checking Engine...</span>

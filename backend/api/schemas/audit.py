@@ -61,3 +61,25 @@ class AuditReportResponse(BaseModel):
     hash_records: List[Dict[str, Any]]
     policy_reports: List[Dict[str, Any]]
     metadata: Dict[str, Any] = {}
+
+
+class EngineCheckItem(BaseModel):
+    """Status details for individual cracking engine binary check."""
+    engine: str
+    status: str = Field(..., description="'found' or 'not_found'")
+    binary_path: Optional[str] = None
+    version: Optional[str] = None
+    checked_paths: List[str] = []
+
+
+class EngineCheckResponse(BaseModel):
+    """Combined engine status report response."""
+    hashcat: EngineCheckItem
+    john: EngineCheckItem
+
+
+class EngineConfigSchema(BaseModel):
+    """Configuration payload for custom engine binary paths."""
+    hashcat_binary_path: Optional[str] = ""
+    john_binary_path: Optional[str] = ""
+

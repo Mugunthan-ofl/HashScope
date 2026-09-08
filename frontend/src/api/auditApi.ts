@@ -7,6 +7,8 @@ import {
   AuditStatusResponse,
   AuditReportResponse,
   BackendHealthResponse,
+  EngineCheckResponse,
+  EngineConfigPayload,
 } from './types';
 
 const DEFAULT_BASE_URL = 'http://localhost:8000';
@@ -62,6 +64,30 @@ export const auditApi = {
   },
 
   /**
+   * Check installation status of cracking engine CLI binaries
+   */
+  async checkEngines(): Promise<EngineCheckResponse> {
+    return request<EngineCheckResponse>('/api/v1/audit/engines/check');
+  },
+
+  /**
+   * Fetch current custom binary paths config
+   */
+  async getEngineConfig(): Promise<EngineConfigPayload> {
+    return request<EngineConfigPayload>('/api/v1/audit/engines/config');
+  },
+
+  /**
+   * Update custom binary paths config in backend config.yaml and re-run check
+   */
+  async updateEngineConfig(payload: EngineConfigPayload): Promise<EngineCheckResponse> {
+    return request<EngineCheckResponse>('/api/v1/audit/engines/config', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+  },
+
+  /**
    * Trigger new audit job
    */
   async createAudit(config: AuditConfig): Promise<AuditStatusResponse> {
@@ -91,4 +117,13 @@ export const auditApi = {
   async getWordlists(): Promise<string[]> {
     return request<string[]>('/api/v1/audit/wordlists');
   },
+
+  /**
+   * Get direct download export URL for an audit report
+   */
+  getExportUrl(auditId: string, format: string = 'html'): string {
+    const baseUrl = getApiBaseUrl().replace(/\/$/, '');
+    return `${baseUrl}/api/v1/audit/${auditId}/export?format=${format}`;
+  },
 };
+

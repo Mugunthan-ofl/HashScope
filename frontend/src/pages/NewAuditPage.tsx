@@ -2,10 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Layout } from '../components/layout/Layout';
 import { ErrorAlert } from '../components/common/ErrorAlert';
+import { EngineGuidanceAlert } from '../components/common/EngineGuidanceAlert';
 import { auditApi } from '../api/auditApi';
 import { AuditConfig } from '../api/types';
 import { useSettings } from '../context/SettingsContext';
 import { Play, RotateCw, FileCode } from 'lucide-react';
+
 
 const SAMPLE_PASSWORDS = [
   'password',
@@ -158,7 +160,24 @@ export const NewAuditPage: React.FC = () => {
           </p>
         </div>
 
-        {error && <ErrorAlert message={error} onRetry={() => setError(null)} />}
+        {error && (
+          <div className="space-y-2">
+            {error.includes('not found') || error.includes('Checked:') || error.includes('Hashcat') || error.includes('John') ? (
+              <EngineGuidanceAlert
+                errorMessage={error}
+                onRetry={() => handleSubmit({ preventDefault: () => {} } as React.FormEvent)}
+                onSwitchToMock={() => {
+                  setEngine('mock');
+                  setError(null);
+                }}
+              />
+
+            ) : (
+              <ErrorAlert message={error} onRetry={() => setError(null)} />
+            )}
+          </div>
+        )}
+
 
         {/* Polling / Processing Modal overlay */}
         {submitting && (
@@ -203,7 +222,7 @@ export const NewAuditPage: React.FC = () => {
                 >
                   <option value="hashcat">Hashcat CLI Engine</option>
                   <option value="john">John the Ripper CLI Engine</option>
-                  {demoMode && <option value="mock">Mock Engine (Demo Simulation Mode)</option>}
+                  <option value="mock">Mock Engine (Demo Simulation Mode)</option>
                 </select>
               </div>
 

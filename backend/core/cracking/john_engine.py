@@ -9,6 +9,7 @@ import subprocess
 import time
 from typing import Any, List, Optional
 from backend.core.interfaces.crack_engine import CrackEngine, CrackResult, CrackedHash
+from backend.core.cracking.binary_resolver import resolve_engine_binary
 from backend.core.cracking.format_lookup import get_john_format
 from backend.core.cracking.wordlist_utils import resolve_wordlist_path
 
@@ -16,7 +17,7 @@ from backend.core.cracking.wordlist_utils import resolve_wordlist_path
 class JohnEngine(CrackEngine):
     """John the Ripper CLI wrapper implementing CrackEngine."""
 
-    def __init__(self, binary_path: str = "john"):
+    def __init__(self, binary_path: Optional[str] = None):
         self._binary_path = binary_path
 
     @property
@@ -58,12 +59,27 @@ class JohnEngine(CrackEngine):
             with open(hash_file, "r", encoding="utf-8", errors="ignore") as hf:
                 total_input_hashes = sum(1 for line in hf if line.strip())
 
+        # Resolve binary path via 3-tier lookup
+        resolved_bin, checked_paths, version = resolve_engine_binary("john", self._binary_path)
+        if not resolved_bin:
+            err_msg = (
+                f"John the Ripper binary not found. Checked: [{', '.join(checked_paths)}]. "
+                "Specify a custom binary path in Settings or verify installation."
+            )
+            return CrackResult(
+                engine_name=self.engine_name,
+                total_hashes=total_input_hashes,
+                cracked_count=0,
+                status="tool_not_found",
+                error_message=err_msg
+            )
+
         # Resolve wordlist to absolute file path on disk
         resolved_wordlist = resolve_wordlist_path(wordlist)
 
         # Build list-based command argument vector (never shell=True)
         cmd: List[str] = [
-            self._binary_path,
+            resolved_bin,
             f"--format={fmt}",
             f"--wordlist={resolved_wordlist}",
             hash_file,
@@ -88,7 +104,10 @@ class JohnEngine(CrackEngine):
                 total_hashes=total_input_hashes,
                 cracked_count=0,
                 status="tool_not_found",
-                error_message=f"John the Ripper binary not found at path '{self._binary_path}'."
+                error_message=(
+                    f"John the Ripper binary not found at resolved path '{resolved_bin}'. "
+                    f"Checked: [{', '.join(checked_paths)}]."
+                )
             )
         except subprocess.TimeoutExpired:
             return CrackResult(
@@ -99,10 +118,27 @@ class JohnEngine(CrackEngine):
                 status="timeout",
                 error_message=f"John the Ripper run timed out after {timeout} seconds."
             )
+        except Exception as e:
+            return CrackResult(
+                engine_name=self.engine_name,
+                total_hashes=total_input_hashes,
+                cracked_count=0,
+                status="execution_error",
+                error_message=f"Subprocess error executing John the Ripper: {str(e)}"
+            )
+
+        if res.returncode not in [0, 1]:
+            return CrackResult(
+                engine_name=self.engine_name,
+                total_hashes=total_input_hashes,
+                cracked_count=0,
+                status="execution_error",
+                error_message=f"John the Ripper process failed with exit code {res.returncode}: {res.stderr or res.stdout}"
+            )
 
         # Run john --show to get cracked plaintexts
         cracked_items: List[CrackedHash] = []
-        show_cmd = [self._binary_path, "--show", f"--format={fmt}", hash_file]
+        show_cmd = [resolved_bin, "--show", f"--format={fmt}", hash_file]
         if potfile_path:
             show_cmd.append(f"--pot={potfile_path}")
 
@@ -128,8 +164,14 @@ class JohnEngine(CrackEngine):
                                 hash_type=algorithm
                             )
                         )
-        except Exception:
-            pass
+        except Exception as parse_err:
+            return CrackResult(
+                engine_name=self.engine_name,
+                total_hashes=total_input_hashes,
+                cracked_count=0,
+                status="result_parse_error",
+                error_message=f"Failed to parse John the Ripper output: {str(parse_err)}"
+            )
 
         return CrackResult(
             engine_name=self.engine_name,
@@ -137,8 +179,8 @@ class JohnEngine(CrackEngine):
             cracked_count=len(cracked_items),
             cracked_hashes=cracked_items,
             execution_time_seconds=elapsed_time,
-            status="success" if res.returncode in [0, 1] else "error",
-            error_message=res.stderr if res.returncode not in [0, 1] else None,
+            status="success",
+            error_message=None,
             metadata={
                 "returncode": res.returncode,
                 "algorithm": algorithm,

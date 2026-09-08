@@ -21,8 +21,8 @@ interface CombinedRecord extends HashRecordItem {
 const getCategoryStatusBadge = (violations?: PolicyViolationItem[]) => {
   if (!violations || violations.length === 0) {
     return (
-      <span className="text-[10px] font-bold text-[#10b981] bg-[#0a2e27]/60 px-2 py-0.5 rounded border border-[#10b981]/40 uppercase tracking-wider">
-        PASSED
+      <span className="inline-flex items-center gap-1 text-[10px] font-bold text-[#10b981] bg-[#0a2e27]/60 px-2 py-0.5 rounded border border-[#10b981]/40 uppercase tracking-wider">
+        <CheckCircle2 className="w-3 h-3" /> PASSED
       </span>
     );
   }
@@ -31,14 +31,14 @@ const getCategoryStatusBadge = (violations?: PolicyViolationItem[]) => {
   );
   if (hasHighOrCritical) {
     return (
-      <span className="text-[10px] font-bold text-[#ef4444] bg-[#2e0a0a]/60 px-2 py-0.5 rounded border border-[#ef4444]/40 uppercase tracking-wider">
-        FAILED
+      <span className="inline-flex items-center gap-1 text-[10px] font-bold text-[#ef4444] bg-[#2e0a0a]/60 px-2 py-0.5 rounded border border-[#ef4444]/40 uppercase tracking-wider">
+        <ShieldX className="w-3 h-3" /> FAILED
       </span>
     );
   }
   return (
-    <span className="text-[10px] font-bold text-[#ffbf00] bg-[#2a200a]/60 px-2 py-0.5 rounded border border-[#ffbf00]/40 uppercase tracking-wider">
-      WARNING
+    <span className="inline-flex items-center gap-1 text-[10px] font-bold text-[#ffbf00] bg-[#2a200a]/60 px-2 py-0.5 rounded border border-[#ffbf00]/40 uppercase tracking-wider">
+      <Filter className="w-3 h-3" /> WARNING
     </span>
   );
 };

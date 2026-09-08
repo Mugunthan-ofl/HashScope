@@ -18,33 +18,33 @@ export const SummaryCard: React.FC<SummaryCardProps> = ({
   badgeText,
   badgeType = 'neutral',
 }) => {
-  let badgeClasses = 'bg-[#0f1d20] text-slate-300 border-[#1b282a]';
+  let badgeClasses = 'bg-theme-surface-sec text-theme-text-sec border-theme';
   let BadgeIcon = Info;
 
   if (badgeType === 'danger') {
-    badgeClasses = 'bg-[#3b0a0a] text-red-400 border-red-900/60';
+    badgeClasses = 'bg-theme-error-bg text-theme-error-text border-theme-error-border';
     BadgeIcon = AlertTriangle;
   } else if (badgeType === 'warning') {
-    badgeClasses = 'bg-[#3b200a] text-amber-400 border-amber-900/60';
+    badgeClasses = 'bg-theme-warning-bg text-theme-warning-text border-theme-warning-border';
     BadgeIcon = AlertTriangle;
   } else if (badgeType === 'success') {
-    badgeClasses = 'bg-[#092e26] text-[#10b981] border-[#10b981]/40';
+    badgeClasses = 'bg-theme-success-bg text-theme-accent-text border-theme-success-border';
     BadgeIcon = CheckCircle2;
   }
 
   return (
-    <div className="bg-[#101719] border border-[#1b282a] rounded-xl p-5 space-y-3 shadow-sm hover:border-[#233538] transition-colors">
+    <div className="bg-theme-surface border border-theme rounded-xl p-5 space-y-3 shadow-theme-md hover:border-theme-border-subtle transition-colors">
       <div className="flex items-center justify-between">
-        <span className="text-xs font-medium text-slate-400 uppercase tracking-wider font-mono">
+        <span className="text-xs font-medium text-theme-text-sec uppercase tracking-wider font-mono">
           {title}
         </span>
-        <div className="p-2 rounded-lg bg-[#0a0f11] border border-[#1b282a] text-[#10b981]">
+        <div className="p-2 rounded-lg bg-theme-surface-sec border border-theme text-theme-accent">
           <Icon className="w-4 h-4" />
         </div>
       </div>
 
       <div className="flex items-baseline justify-between pt-1">
-        <span className="text-2xl font-bold tracking-tight text-[#10b981] font-mono">
+        <span className="text-2xl font-bold tracking-tight text-theme-accent font-mono">
           {value}
         </span>
         {badgeText && (
@@ -55,7 +55,7 @@ export const SummaryCard: React.FC<SummaryCardProps> = ({
         )}
       </div>
 
-      {subtitle && <p className="text-xs text-slate-400 leading-normal">{subtitle}</p>}
+      {subtitle && <p className="text-xs text-theme-text-muted leading-normal">{subtitle}</p>}
     </div>
   );
 };

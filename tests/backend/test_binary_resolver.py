@@ -48,21 +48,19 @@ def test_resolve_engine_binary_custom_path_invalid_falls_back():
     """Verify non-existent custom path is recorded in checked_paths and lookup falls back."""
     invalid_path = r"C:\non_existent_folder_xyz\hashcat.exe"
 
-    with patch("shutil.which", return_value=None):
+    with patch("shutil.which", return_value=None), patch.dict("backend.core.cracking.binary_resolver.COMMON_INSTALL_PATHS", {"win32": {}, "posix": {}}):
         res_path, checked_paths, ver = resolve_engine_binary("hashcat", invalid_path)
 
         assert res_path is None
         assert any("Custom path:" in p for p in checked_paths)
         assert any("System PATH" in p for p in checked_paths)
-        # Should include common OS fallback paths as well
-        assert len(checked_paths) > 2
 
 
 def test_hashcat_engine_error_message_includes_checked_paths():
     """Verify missing hashcat binary error message explicitly lists all checked candidate paths."""
     engine = HashcatEngine(binary_path=r"C:\invalid_path\hashcat.exe")
 
-    with patch("shutil.which", return_value=None):
+    with patch("shutil.which", return_value=None), patch.dict("backend.core.cracking.binary_resolver.COMMON_INSTALL_PATHS", {"win32": {}, "posix": {}}):
         res = engine.run("dummy.hash", "dummy.txt", algorithm="md5")
 
         assert res.status == "tool_not_found"

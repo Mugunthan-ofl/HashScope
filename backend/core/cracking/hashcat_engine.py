@@ -101,6 +101,8 @@ class HashcatEngine(CrackEngine):
         logger.info(f"Executing Hashcat CLI command: {' '.join(cmd)}")
         print(f"[HashcatEngine] Command vector: {' '.join(cmd)}")
 
+        bin_cwd = os.path.dirname(resolved_bin) if os.path.isabs(resolved_bin) and os.path.isfile(resolved_bin) else None
+
         start_time = time.time()
         try:
             res = subprocess.run(
@@ -108,7 +110,8 @@ class HashcatEngine(CrackEngine):
                 shell=False,
                 timeout=timeout,
                 capture_output=True,
-                text=True
+                text=True,
+                cwd=bin_cwd
             )
             elapsed_time = time.time() - start_time
         except FileNotFoundError as e:
@@ -169,8 +172,7 @@ class HashcatEngine(CrackEngine):
                     os.remove(out_file)
                 except OSError:
                     pass
-
-            if res.stdout:
+            elif res.stdout:
                 raw_lines.extend(res.stdout.splitlines())
 
             seen_hashes = set()

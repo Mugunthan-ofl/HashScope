@@ -26,11 +26,11 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fadeIn">
-      <div className="bg-[#101719] border border-[#1b282a] rounded-xl max-w-md w-full p-6 space-y-5 shadow-2xl shadow-black relative">
+      <div className="bg-theme-surface border border-theme rounded-xl max-w-md w-full p-6 space-y-5 shadow-theme-lg relative transition-colors">
         {/* Close Button */}
         <button
           onClick={onCancel}
-          className="absolute top-4 right-4 text-slate-400 hover:text-slate-200 transition-colors p-1 rounded-lg hover:bg-[#1b282a]"
+          className="absolute top-4 right-4 text-theme-text-sec hover:text-theme-text transition-colors p-1 rounded-lg hover:bg-theme-surface-hover cursor-pointer"
           aria-label="Close dialog"
         >
           <X className="w-4 h-4" />
@@ -38,21 +38,21 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
 
         {/* Icon & Title */}
         <div className="flex items-start gap-4">
-          <div className={`p-3 rounded-xl ${isDanger ? 'bg-[#2e0a0a] text-red-400 border border-[#ef4444]/40' : 'bg-[#2a200a] text-amber-400 border border-[#ffbf00]/40'}`}>
+          <div className={`p-3 rounded-xl ${isDanger ? 'bg-theme-error-bg text-theme-error-text border border-theme-error-border' : 'bg-theme-warning-bg text-theme-warning-text border border-theme-warning-border'}`}>
             <AlertTriangle className="w-6 h-6" />
           </div>
           <div>
-            <h3 className="text-base font-bold text-slate-100">{title}</h3>
-            <p className="text-xs text-slate-400 mt-1 font-mono leading-relaxed">{message}</p>
+            <h3 className="text-base font-bold text-theme-text">{title}</h3>
+            <p className="text-xs text-theme-text-sec mt-1 font-mono leading-relaxed">{message}</p>
           </div>
         </div>
 
         {/* Action Buttons */}
-        <div className="flex items-center justify-end gap-3 pt-2 border-t border-[#1b282a]">
+        <div className="flex items-center justify-end gap-3 pt-2 border-t border-theme">
           <button
             type="button"
             onClick={onCancel}
-            className="px-4 py-2 bg-[#0a0f11] hover:bg-[#152023] text-slate-300 border border-[#1b282a] rounded-lg text-xs font-mono transition-colors cursor-pointer"
+            className="px-4 py-2 bg-theme-surface-sec hover:bg-theme-surface-hover text-theme-text-sec border border-theme rounded-lg text-xs font-mono transition-colors cursor-pointer"
           >
             {cancelLabel}
           </button>
@@ -61,8 +61,8 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
             onClick={onConfirm}
             className={`px-4 py-2 rounded-lg text-xs font-bold font-mono transition-all cursor-pointer ${
               isDanger
-                ? 'bg-red-600 hover:bg-red-500 text-white shadow-lg shadow-red-900/30'
-                : 'bg-amber-600 hover:bg-amber-500 text-slate-950'
+                ? 'bg-red-600 hover:bg-red-500 text-white shadow-md'
+                : 'bg-amber-600 hover:bg-amber-500 text-white'
             }`}
           >
             {confirmLabel}

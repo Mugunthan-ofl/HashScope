@@ -23,19 +23,19 @@ export const StrengthChart: React.FC<StrengthChartProps> = ({ distribution }) =>
 
   if (totalAccounts === 0) {
     return (
-      <div className="bg-[#101719] border border-[#1b282a] rounded-xl p-5 space-y-4 shadow-lg shadow-black/40">
-        <div className="flex items-center justify-between border-b border-[#1b282a] pb-3">
-          <h3 className="text-xs font-semibold text-slate-300 uppercase tracking-wider font-mono">
+      <div className="bg-theme-surface border border-theme rounded-xl p-5 space-y-4 shadow-theme-md transition-colors">
+        <div className="flex items-center justify-between border-b border-theme pb-3">
+          <h3 className="text-xs font-semibold text-theme-text-sec uppercase tracking-wider font-mono">
             Password Strength Distribution
           </h3>
-          <span className="text-[11px] text-slate-500 font-mono">Categorized Tiers</span>
+          <span className="text-[11px] text-theme-text-muted font-mono">Categorized Tiers</span>
         </div>
         <div className="h-64 flex flex-col items-center justify-center text-center p-4">
-          <div className="w-12 h-12 rounded-full bg-[#0a2e27] border border-[#10b981]/40 flex items-center justify-center text-[#10b981] mb-2 font-mono text-sm font-bold">
+          <div className="w-12 h-12 rounded-full bg-theme-accent-bg border border-theme-accent-border flex items-center justify-center text-theme-accent mb-2 font-mono text-sm font-bold">
             0
           </div>
-          <p className="text-xs text-slate-300 font-mono">No evaluated accounts available</p>
-          <p className="text-[11px] text-slate-500 font-mono mt-1">Execute an audit run to generate strength metrics.</p>
+          <p className="text-xs text-theme-text font-mono">No evaluated accounts available</p>
+          <p className="text-[11px] text-theme-text-muted font-mono mt-1">Execute an audit run to generate strength metrics.</p>
         </div>
       </div>
     );
@@ -45,12 +45,12 @@ export const StrengthChart: React.FC<StrengthChartProps> = ({ distribution }) =>
   const activeSlices = data.filter((item) => item.value > 0);
 
   return (
-    <div className="bg-[#101719] border border-[#1b282a] rounded-xl p-5 space-y-4 shadow-lg shadow-black/40">
-      <div className="flex items-center justify-between border-b border-[#1b282a] pb-3">
-        <h3 className="text-xs font-semibold text-[#10b981] uppercase tracking-wider font-mono">
+    <div className="bg-theme-surface border border-theme rounded-xl p-5 space-y-4 shadow-theme-md transition-colors">
+      <div className="flex items-center justify-between border-b border-theme pb-3">
+        <h3 className="text-xs font-semibold text-theme-accent uppercase tracking-wider font-mono">
           Password Strength Distribution
         </h3>
-        <span className="text-[11px] bg-[#0a2e27] text-[#10b981] px-2 py-0.5 rounded border border-[#10b981]/40 font-mono font-bold">
+        <span className="text-[11px] bg-theme-accent-bg text-theme-accent px-2 py-0.5 rounded border border-theme-accent-border font-mono font-bold">
           {totalAccounts} Target(s)
         </span>
       </div>
@@ -71,18 +71,18 @@ export const StrengthChart: React.FC<StrengthChartProps> = ({ distribution }) =>
                 <Cell
                   key={entry.name}
                   fill={TIER_COLORS[entry.name] || '#3b82f6'}
-                  stroke="#0a0f11"
+                  stroke="var(--bg-surface)"
                   strokeWidth={2}
                 />
               ))}
             </Pie>
             <Tooltip
               contentStyle={{
-                backgroundColor: '#101719',
-                borderColor: '#1b282a',
+                backgroundColor: 'var(--bg-surface)',
+                borderColor: 'var(--border-color)',
                 borderRadius: '0.5rem',
                 fontSize: '0.75rem',
-                color: '#f8fafc',
+                color: 'var(--text-primary)',
               }}
               formatter={(val: number, name: string, item: any) => [
                 `${val} accounts (${item.payload.percentage}%)`,
@@ -93,7 +93,7 @@ export const StrengthChart: React.FC<StrengthChartProps> = ({ distribution }) =>
               verticalAlign="bottom"
               height={36}
               formatter={(value: string) => (
-                <span className="text-xs text-slate-300 font-mono ml-1">{value}</span>
+                <span className="text-xs text-theme-text-sec font-mono ml-1">{value}</span>
               )}
             />
           </PieChart>

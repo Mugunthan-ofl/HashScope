@@ -4,7 +4,7 @@ app:
   debug: true
 engines:
   hashcat:
-    binary_path: C:\Users\Mugunthan\AppData\Local\Temp\pytest-of-Mugunthan\pytest-2\test_engine_config_api_endpoin0\hashcat.exe
+    binary_path: C:\Users\Mugunthan\AppData\Local\Temp\pytest-of-Mugunthan\pytest-6\test_engine_config_api_endpoin0\hashcat.exe
     default_workload_profile: 3
     timeout_seconds: 300
   john:

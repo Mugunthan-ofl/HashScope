@@ -9,20 +9,20 @@ interface StrengthBadgeProps {
 export const StrengthBadge: React.FC<StrengthBadgeProps> = ({ label, size = 'md' }) => {
   const normLabel = label.trim();
 
-  let styleClasses = 'bg-[#0d1416] text-slate-400 border-[#1b282a]';
+  let styleClasses = 'bg-theme-surface-sec text-theme-text-sec border-theme-border';
   let IconComponent = Lock;
 
   if (normLabel === 'Very Weak' || normLabel === 'critical' || normLabel === 'high') {
-    styleClasses = 'bg-[#2e0a0a] text-[#ef4444] border-[#ef4444]/40';
+    styleClasses = 'bg-theme-error-bg text-theme-error-text border-theme-error-border';
     IconComponent = AlertOctagon;
   } else if (normLabel === 'Weak' || normLabel === 'medium') {
-    styleClasses = 'bg-[#2a200a] text-[#ffbf00] border-[#ffbf00]/40';
+    styleClasses = 'bg-theme-warning-bg text-theme-warning-text border-theme-warning-border';
     IconComponent = AlertTriangle;
   } else if (normLabel === 'Medium' || normLabel === 'Strong' || normLabel === 'info' || normLabel === 'low') {
-    styleClasses = 'bg-[#0a2e27] text-[#10b981] border-[#10b981]/40';
+    styleClasses = 'bg-theme-accent-bg text-theme-accent-text border-theme-accent-border';
     IconComponent = normLabel === 'Medium' ? ShieldAlert : ShieldCheck;
   } else if (normLabel === 'Uncracked') {
-    styleClasses = 'bg-[#0d1416] text-slate-400 border-[#1b282a]';
+    styleClasses = 'bg-theme-surface-sec text-theme-text-sec border-theme-border';
     IconComponent = Lock;
   }
 
@@ -30,7 +30,7 @@ export const StrengthBadge: React.FC<StrengthBadgeProps> = ({ label, size = 'md'
   const iconSize = size === 'sm' ? 'w-3 h-3' : 'w-3.5 h-3.5';
 
   return (
-    <span className={`inline-flex items-center gap-1.5 rounded border ${sizeClasses} ${styleClasses}`}>
+    <span className={`inline-flex items-center gap-1.5 rounded border transition-colors ${sizeClasses} ${styleClasses}`}>
       <IconComponent className={iconSize} />
       <span>{label}</span>
     </span>

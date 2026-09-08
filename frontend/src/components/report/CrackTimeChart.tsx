@@ -22,13 +22,13 @@ export const CrackTimeChart: React.FC<CrackTimeChartProps> = ({ hashRecords }) =
   });
 
   return (
-    <div className="bg-[#101719] border border-[#1b282a] rounded-xl p-5 space-y-4 shadow-lg shadow-black/40">
-      <div className="flex items-center justify-between border-b border-[#1b282a] pb-3">
+    <div className="bg-theme-surface border border-theme rounded-xl p-5 space-y-4 shadow-theme-md transition-colors">
+      <div className="flex items-center justify-between border-b border-theme pb-3">
         <div>
-          <h3 className="text-xs font-semibold text-[#10b981] uppercase tracking-wider font-mono">
+          <h3 className="text-xs font-semibold text-theme-accent uppercase tracking-wider font-mono">
             Cracking Resistance Time (Log Seconds)
           </h3>
-          <p className="text-xs text-slate-500 mt-0.5">Estimated time required to exhaust hash keyspace</p>
+          <p className="text-xs text-theme-text-muted mt-0.5 font-mono">Estimated time required to exhaust hash keyspace</p>
         </div>
       </div>
 
@@ -37,13 +37,13 @@ export const CrackTimeChart: React.FC<CrackTimeChartProps> = ({ hashRecords }) =
           <BarChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
             <XAxis
               dataKey="label"
-              stroke="#64748b"
+              stroke="var(--text-muted)"
               fontSize={11}
               fontFamily="monospace"
               tickLine={false}
             />
             <YAxis
-              stroke="#64748b"
+              stroke="var(--text-muted)"
               fontSize={11}
               fontFamily="monospace"
               tickLine={false}
@@ -51,11 +51,11 @@ export const CrackTimeChart: React.FC<CrackTimeChartProps> = ({ hashRecords }) =
             />
             <Tooltip
               contentStyle={{
-                backgroundColor: '#101719',
-                borderColor: '#1b282a',
+                backgroundColor: 'var(--bg-surface)',
+                borderColor: 'var(--border-color)',
                 borderRadius: '0.5rem',
                 fontSize: '0.75rem',
-                color: '#f8fafc',
+                color: 'var(--text-primary)',
               }}
               formatter={(val: number) => [`${val} seconds`, 'Crack Time']}
             />
@@ -63,7 +63,7 @@ export const CrackTimeChart: React.FC<CrackTimeChartProps> = ({ hashRecords }) =
               {data.map((entry, index) => (
                 <Cell
                   key={`cell-${index}`}
-                  fill={entry.seconds < 10 ? '#ef4444' : entry.seconds < 300 ? '#f59e0b' : '#10b981'}
+                  fill={entry.seconds < 10 ? 'var(--error)' : entry.seconds < 300 ? 'var(--warning)' : 'var(--accent)'}
                 />
               ))}
             </Bar>

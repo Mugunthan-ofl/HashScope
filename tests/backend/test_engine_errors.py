@@ -24,8 +24,10 @@ from backend.core.cracking.exceptions import (
 from backend.services.audit_service import AuditService, AuditConfig
 
 
-def test_hashcat_missing_binary_returns_tool_not_found():
+@patch("backend.core.cracking.hashcat_engine.resolve_engine_binary")
+def test_hashcat_missing_binary_returns_tool_not_found(mock_resolve):
     """Verify missing hashcat binary returns tool_not_found error state."""
+    mock_resolve.return_value = (None, ["Checked custom path"], None)
     engine = HashcatEngine(binary_path="nonexistent_hashcat_binary_xyz")
     res = engine.run("dummy.hash", "dummy.txt", algorithm="md5")
 

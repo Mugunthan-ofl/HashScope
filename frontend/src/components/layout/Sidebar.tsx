@@ -15,17 +15,17 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
   ];
 
   const sidebarContent = (
-    <div className="flex flex-col h-full bg-[#0d1416] border-r border-[#1b282a] w-64 select-none">
+    <div className="flex flex-col h-full bg-theme-sidebar border-r border-theme w-64 select-none transition-colors">
       {/* Brand Logo */}
-      <div className="h-16 flex items-center px-6 border-b border-[#1b282a] gap-3">
-        <div className="w-8 h-8 rounded-lg bg-[#072c25] border border-[#0d594b] flex items-center justify-center text-[#10b981] shadow-lg shadow-[#10b981]/10">
+      <div className="h-16 flex items-center px-6 border-b border-theme gap-3">
+        <div className="w-8 h-8 rounded-lg bg-theme-accent-bg border border-theme-accent-border flex items-center justify-center text-theme-accent shadow-sm">
           <ShieldCheck className="w-5 h-5" />
         </div>
         <div>
-          <h1 className="text-sm font-bold tracking-tight text-[#10b981] flex items-center gap-1">
+          <h1 className="text-sm font-bold tracking-tight text-theme-accent flex items-center gap-1">
             HashScope
           </h1>
-          <p className="text-[10px] text-slate-500 uppercase tracking-wider font-mono">Threat Audit Suite</p>
+          <p className="text-[10px] text-theme-text-muted uppercase tracking-wider font-mono">Threat Audit Suite</p>
         </div>
       </div>
 
@@ -41,8 +41,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
               className={({ isActive }) =>
                 `flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-xs font-medium transition-all ${
                   isActive
-                    ? 'bg-[#0a2e27] text-[#10b981] border border-[#10b981]/40 font-semibold shadow-sm shadow-[#10b981]/10'
-                    : 'text-slate-400 hover:text-slate-200 hover:bg-[#121c1f]'
+                    ? 'bg-theme-accent-bg text-theme-accent border border-theme-accent-border font-semibold shadow-sm'
+                    : 'text-theme-text-sec hover:text-theme-text hover:bg-theme-surface-hover'
                 }`
               }
               end={item.to === '/'}
@@ -55,10 +55,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
       </nav>
 
       {/* System Status Footer */}
-      <div className="p-4 border-t border-[#1b282a]">
-        <div className="px-3 py-2 rounded-lg bg-[#0a0f11] border border-[#1b282a] text-[11px] text-slate-400 font-mono flex items-center justify-between">
+      <div className="p-4 border-t border-theme">
+        <div className="px-3 py-2 rounded-lg bg-theme-surface-sec border border-theme text-[11px] text-theme-text-sec font-mono flex items-center justify-between">
           <span>Engine v0.1.0</span>
-          <span className="w-2 h-2 rounded-full bg-[#10b981] animate-pulse"></span>
+          <span className="w-2 h-2 rounded-full bg-theme-accent animate-pulse"></span>
         </div>
       </div>
     </div>
@@ -74,7 +74,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
       {/* Mobile Drawer Overlay */}
       {isOpen && (
         <div className="fixed inset-0 z-40 md:hidden flex">
-          <div className="fixed inset-0 bg-[#0a0f11]/80 backdrop-blur-sm" onClick={onClose} />
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
           <div className="relative z-50 h-full">{sidebarContent}</div>
         </div>
       )}

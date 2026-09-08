@@ -30,25 +30,25 @@ export const RecentAuditsTable: React.FC<RecentAuditsTableProps> = ({ audits }) 
   };
 
   return (
-    <div className="bg-[#101719] border border-[#1b282a] rounded-xl overflow-hidden shadow-lg shadow-black/40">
-      <div className="p-5 border-b border-[#1b282a] flex items-center justify-between">
+    <div className="bg-theme-surface border border-theme rounded-xl overflow-hidden shadow-theme-md transition-colors">
+      <div className="p-5 border-b border-theme flex items-center justify-between">
         <div>
-          <h3 className="text-xs font-semibold text-[#10b981] uppercase tracking-wider font-mono">
+          <h3 className="text-xs font-semibold text-theme-accent uppercase tracking-wider font-mono">
             Recent Audit Runs
           </h3>
-          <p className="text-xs text-slate-400 mt-0.5 font-mono">Audit jobs executed in this session</p>
+          <p className="text-xs text-theme-text-sec mt-0.5 font-mono">Audit jobs executed in this session</p>
         </div>
         <div className="flex items-center gap-3">
           <button
             onClick={() => setConfirmClearOpen(true)}
-            className="text-[11px] font-mono text-slate-400 hover:text-red-400 flex items-center gap-1 transition-colors cursor-pointer"
+            className="text-[11px] font-mono text-theme-text-sec hover:text-theme-error-text flex items-center gap-1 transition-colors cursor-pointer"
             title="Clear all stored audit runs from browser cache"
           >
             <Trash2 className="w-3 h-3" /> Clear Runs
           </button>
           <Link
             to="/audit/new"
-            className="text-xs font-medium text-[#10b981] hover:text-[#34d399] flex items-center gap-1 font-mono transition-colors"
+            className="text-xs font-medium text-theme-accent hover:text-theme-accent-hover flex items-center gap-1 font-mono transition-colors"
           >
             New Run <ArrowRight className="w-3.5 h-3.5" />
           </Link>
@@ -57,7 +57,7 @@ export const RecentAuditsTable: React.FC<RecentAuditsTableProps> = ({ audits }) 
 
       <div className="overflow-x-auto">
         <table className="w-full text-left text-xs font-mono">
-          <thead className="bg-[#0a0f11] text-slate-400 border-b border-[#1b282a]">
+          <thead className="bg-theme-tableheader text-theme-text-sec border-b border-theme">
             <tr>
               <th className="px-5 py-3 font-semibold">Audit ID</th>
               <th className="px-5 py-3 font-semibold">Algorithm</th>
@@ -67,23 +67,23 @@ export const RecentAuditsTable: React.FC<RecentAuditsTableProps> = ({ audits }) 
               <th className="px-5 py-3 font-semibold text-right">Actions</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-[#1b282a]/60 text-slate-300">
+          <tbody className="divide-y divide-theme text-theme-text">
             {audits.map((item) => (
-              <tr key={item.audit_id} className="hover:bg-[#152023] transition-colors">
-                <td className="px-5 py-3.5 font-semibold text-[#10b981]">{item.audit_id}</td>
+              <tr key={item.audit_id} className="hover:bg-theme-surface-hover transition-colors">
+                <td className="px-5 py-3.5 font-semibold text-theme-accent">{item.audit_id}</td>
                 <td className="px-5 py-3.5 uppercase">{item.algorithm}</td>
                 <td className="px-5 py-3.5 capitalize">{item.engine}</td>
                 <td className="px-5 py-3.5">
                   {item.status === 'completed' ? (
-                    <span className="inline-flex items-center gap-1.5 text-[#10b981]">
+                    <span className="inline-flex items-center gap-1.5 text-theme-accent">
                       <CheckCircle2 className="w-3.5 h-3.5" /> Completed
                     </span>
                   ) : item.status === 'failed' ? (
-                    <span className="inline-flex items-center gap-1.5 text-red-400">
+                    <span className="inline-flex items-center gap-1.5 text-theme-error-text">
                       <XCircle className="w-3.5 h-3.5" /> Failed
                     </span>
                   ) : (
-                    <span className="inline-flex items-center gap-1.5 text-amber-400">
+                    <span className="inline-flex items-center gap-1.5 text-theme-warning-text">
                       <Clock className="w-3.5 h-3.5 animate-spin" /> {item.status}...
                     </span>
                   )}
@@ -94,19 +94,19 @@ export const RecentAuditsTable: React.FC<RecentAuditsTableProps> = ({ audits }) 
                       {item.cracked_count} / {item.total_hashes} ({Math.round((item.cracked_count / (item.total_hashes || 1)) * 100)}%)
                     </span>
                   ) : (
-                    <span className="text-slate-500">-</span>
+                    <span className="text-theme-text-muted">-</span>
                   )}
                 </td>
                 <td className="px-5 py-3.5 text-right flex items-center justify-end gap-2">
                   <Link
                     to={`/audit/${item.audit_id}`}
-                    className="px-3 py-1 bg-[#182427] hover:bg-[#203034] text-slate-200 rounded border border-[#233538] transition-colors inline-block"
+                    className="px-3 py-1 bg-theme-surface-sec hover:bg-theme-surface-hover text-theme-text rounded border border-theme transition-colors inline-block"
                   >
                     View Report
                   </Link>
                   <button
                     onClick={() => setDeleteTargetId(item.audit_id)}
-                    className="p-1 text-slate-500 hover:text-red-400 transition-colors rounded hover:bg-[#203034]"
+                    className="p-1 text-theme-text-sec hover:text-theme-error-text transition-colors rounded hover:bg-theme-surface-hover cursor-pointer"
                     title="Remove from history"
                   >
                     <Trash2 className="w-3.5 h-3.5" />

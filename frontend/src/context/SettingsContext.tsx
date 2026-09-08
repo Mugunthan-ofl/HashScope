@@ -16,6 +16,9 @@ interface SettingsContextType {
   setApiUrl: (url: string) => void;
   demoMode: boolean;
   setDemoMode: (enabled: boolean) => void;
+  theme: 'dark' | 'light';
+  toggleTheme: () => void;
+  setTheme: (theme: 'dark' | 'light') => void;
   isBackendOnline: boolean | null;
   checkBackendHealth: () => Promise<boolean>;
   auditHistory: AuditHistoryItem[];
@@ -33,6 +36,30 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [demoMode, setDemoModeState] = useState<boolean>(() => {
     return localStorage.getItem('hashscope_demo_mode') === 'true';
   });
+
+  const [theme, setThemeState] = useState<'dark' | 'light'>(() => {
+    const saved = localStorage.getItem('hashscope_theme');
+    if (saved === 'light' || saved === 'dark') {
+      return saved;
+    }
+    if (typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: light)').matches) {
+      return 'light';
+    }
+    return 'dark';
+  });
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('hashscope_theme', theme);
+  }, [theme]);
+
+  const toggleTheme = () => {
+    setThemeState((prev) => (prev === 'dark' ? 'light' : 'dark'));
+  };
+
+  const setTheme = (newTheme: 'dark' | 'light') => {
+    setThemeState(newTheme);
+  };
 
   const [auditHistory, setAuditHistory] = useState<AuditHistoryItem[]>(() => {
     try {
@@ -113,6 +140,9 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         setApiUrl,
         demoMode,
         setDemoMode,
+        theme,
+        toggleTheme,
+        setTheme,
         isBackendOnline,
         checkBackendHealth,
         auditHistory,

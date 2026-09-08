@@ -57,18 +57,18 @@ export const DashboardPage: React.FC = () => {
   return (
     <Layout title="Audit Overview & Analytics">
       {/* Top Banner Action */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-[#101719] border border-[#1b282a] rounded-xl p-5 shadow-sm">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-theme-surface border border-theme rounded-xl p-5 shadow-theme-md transition-colors">
         <div>
-          <h2 className="text-base font-bold text-slate-100 flex items-center gap-2">
+          <h2 className="text-base font-bold text-theme-text flex items-center gap-2">
             Password Policy Audit Suite
           </h2>
-          <p className="text-xs text-slate-400 mt-0.5 max-w-xl">
+          <p className="text-xs text-theme-text-sec mt-0.5 max-w-xl">
             Evaluate hash cracking resistance, NIST 800-63B policy compliance, and HaveIBeenPwned breach exposures.
           </p>
         </div>
         <button
           onClick={() => navigate('/audit/new')}
-          className="px-4 py-2 bg-[#10b981] hover:bg-[#34d399] text-[#0a0f11] font-bold rounded-lg text-xs flex items-center justify-center gap-2 transition-colors font-mono shrink-0 cursor-pointer shadow-lg shadow-[#10b981]/10"
+          className="px-4 py-2 bg-theme-accent hover:bg-theme-accent-hover text-white font-bold rounded-lg text-xs flex items-center justify-center gap-2 transition-colors font-mono shrink-0 cursor-pointer shadow-sm"
         >
           <Plus className="w-4 h-4 stroke-[2.5]" /> Start New Audit
         </button>
@@ -81,11 +81,10 @@ export const DashboardPage: React.FC = () => {
         />
       )}
 
-
       {loading ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {Array.from({ length: 4 }).map((_, idx) => (
-            <div key={idx} className="h-28 bg-[#101719] border border-[#1b282a] rounded-xl animate-pulse" />
+            <div key={idx} className="h-28 bg-theme-surface border border-theme rounded-xl animate-pulse" />
           ))}
         </div>
       ) : (

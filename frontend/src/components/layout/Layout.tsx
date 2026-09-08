@@ -11,7 +11,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, title }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-[#0a0f11] text-slate-100 flex font-sans antialiased">
+    <div className="min-h-screen bg-theme-bg text-theme-text flex font-sans antialiased transition-colors duration-150">
       <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       <div className="flex-1 flex flex-col min-w-0">
         <Header onToggleSidebar={() => setSidebarOpen(true)} title={title} />

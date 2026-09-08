@@ -12,8 +12,6 @@ import { useSettings } from '../context/SettingsContext';
 import { EngineGuidanceAlert } from '../components/common/EngineGuidanceAlert';
 import { ShieldCheck, Unlock, Clock, AlertTriangle, ArrowLeft, Download, RotateCw, Trash2, CheckCircle2 } from 'lucide-react';
 
-
-
 export const AuditReportPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -103,7 +101,7 @@ export const AuditReportPage: React.FC = () => {
     return (
       <Layout title="Loading Audit State">
         <div className="space-y-6 max-w-6xl mx-auto">
-          <div className="h-20 bg-[#101719] border border-[#1b282a] rounded-xl animate-pulse" />
+          <div className="h-20 bg-theme-surface border border-theme rounded-xl animate-pulse" />
           <LoadingSkeleton lines={6} />
         </div>
       </Layout>
@@ -115,39 +113,39 @@ export const AuditReportPage: React.FC = () => {
     return (
       <Layout title={`Audit Job Running - ${id}`}>
         <div className="max-w-3xl mx-auto space-y-6">
-          <div className="bg-[#101719] border border-[#10b981]/40 rounded-xl p-8 text-center space-y-6 shadow-xl shadow-black/50">
-            <div className="w-14 h-14 rounded-full bg-[#0a2e27] border border-[#10b981]/60 flex items-center justify-center text-[#10b981] mx-auto animate-pulse">
+          <div className="bg-theme-surface border border-theme-accent-border rounded-xl p-8 text-center space-y-6 shadow-theme-lg transition-colors">
+            <div className="w-14 h-14 rounded-full bg-theme-accent-bg border border-theme-accent-border flex items-center justify-center text-theme-accent mx-auto animate-pulse">
               <RotateCw className="w-7 h-7 animate-spin" />
             </div>
 
             <div>
-              <span className="px-2.5 py-1 rounded text-xs font-mono bg-[#0a2e27] text-[#10b981] border border-[#10b981]/40 uppercase tracking-wider inline-flex items-center gap-1.5 font-bold">
+              <span className="px-2.5 py-1 rounded text-xs font-mono bg-theme-accent-bg text-theme-accent border border-theme-accent-border uppercase tracking-wider inline-flex items-center gap-1.5 font-bold">
                 <RotateCw className="w-3.5 h-3.5 animate-spin" /> Pipeline Execution In Progress
               </span>
-              <h2 className="text-lg font-bold text-slate-100 mt-3 font-mono">Job ID: {id}</h2>
-              <p className="text-xs text-slate-400 mt-1 max-w-md mx-auto font-mono">
+              <h2 className="text-lg font-bold text-theme-text mt-3 font-mono">Job ID: {id}</h2>
+              <p className="text-xs text-theme-text-sec mt-1 max-w-md mx-auto font-mono">
                 Executing steps: Hash Generation → Cracking Engine Execution → Strength Scoring → Policy Evaluation
               </p>
             </div>
 
             {/* Progress Bar */}
             <div className="space-y-2 max-w-md mx-auto">
-              <div className="flex justify-between text-xs font-mono text-slate-400">
+              <div className="flex justify-between text-xs font-mono text-theme-text-sec">
                 <span>Pipeline Progress</span>
-                <span className="text-[#10b981] font-bold">{jobStatus.progress_percent}%</span>
+                <span className="text-theme-accent font-bold">{jobStatus.progress_percent}%</span>
               </div>
-              <div className="w-full bg-[#0a0f11] rounded-full h-3 overflow-hidden border border-[#1b282a]">
+              <div className="w-full bg-theme-surface-sec rounded-full h-3 overflow-hidden border border-theme">
                 <div
-                  className="bg-[#10b981] h-full transition-all duration-300 shadow-[0_0_12px_#10b981]"
+                  className="bg-theme-accent h-full transition-all duration-300 shadow-sm"
                   style={{ width: `${jobStatus.progress_percent}%` }}
                 ></div>
               </div>
             </div>
 
-            <div className="pt-4 border-t border-[#1b282a]">
+            <div className="pt-4 border-t border-theme">
               <button
                 onClick={() => navigate('/')}
-                className="px-4 py-2 bg-[#0e2224] hover:bg-[#132d30] text-[#10b981] border border-[#1b3235] rounded-lg text-xs font-mono inline-flex items-center gap-2 transition-colors cursor-pointer"
+                className="px-4 py-2 bg-theme-surface-sec hover:bg-theme-surface-hover text-theme-text border border-theme rounded-lg text-xs font-mono inline-flex items-center gap-2 transition-colors cursor-pointer"
               >
                 <ArrowLeft className="w-4 h-4" /> Return to Dashboard
               </button>
@@ -174,7 +172,6 @@ export const AuditReportPage: React.FC = () => {
     );
   }
 
-
   if (!report) return null;
 
   const { summary, hash_records, policy_reports } = report;
@@ -182,24 +179,24 @@ export const AuditReportPage: React.FC = () => {
   return (
     <Layout title={`Audit Report - ${report.audit_id}`}>
       {/* Header Title Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-[#101719] border border-[#1b282a] rounded-xl p-5 shadow-lg shadow-black/40">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-theme-surface border border-theme rounded-xl p-5 shadow-theme-md transition-colors">
         <div>
           <div className="flex items-center gap-2">
-            <span className="text-xs font-mono text-[#10b981] font-bold uppercase">{report.audit_id}</span>
-            <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-[#0a2e27] border border-[#10b981]/40 text-[#10b981] inline-flex items-center gap-1 font-bold">
+            <span className="text-xs font-mono text-theme-accent font-bold uppercase">{report.audit_id}</span>
+            <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-theme-accent-bg border border-theme-accent-border text-theme-accent inline-flex items-center gap-1 font-bold">
               <CheckCircle2 className="w-3 h-3" /> Completed
             </span>
           </div>
-          <p className="text-xs text-slate-400 mt-1">
+          <p className="text-xs text-theme-text-sec mt-1">
             Engine: {String(report.metadata?.engine || 'Engine')} • Completed at {new Date(report.completed_at || report.created_at).toLocaleString()}
           </p>
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
-          {/* Download HTML Report Button (Item 3) */}
+          {/* Download HTML Report Button */}
           <button
             onClick={handleDownloadReport}
-            className="px-3.5 py-1.5 bg-[#10b981] hover:bg-[#34d399] text-[#0a0f11] font-bold rounded-lg text-xs font-mono flex items-center gap-1.5 transition-all cursor-pointer shadow-[0_0_12px_rgba(16,185,129,0.2)]"
+            className="px-3.5 py-1.5 bg-theme-accent hover:bg-theme-accent-hover text-white font-bold rounded-lg text-xs font-mono flex items-center gap-1.5 transition-all cursor-pointer shadow-sm"
             title="Download full standalone HTML audit report"
           >
             <Download className="w-3.5 h-3.5 stroke-[2.5]" /> Download Report
@@ -207,7 +204,7 @@ export const AuditReportPage: React.FC = () => {
 
           <button
             onClick={() => setIsDeleteModalOpen(true)}
-            className="px-3 py-1.5 bg-red-950/60 hover:bg-red-900 border border-red-800 text-red-300 rounded-lg text-xs font-mono flex items-center gap-1.5 transition-colors cursor-pointer"
+            className="px-3 py-1.5 bg-theme-error-bg hover:opacity-90 border border-theme-error-border text-theme-error-text rounded-lg text-xs font-mono flex items-center gap-1.5 transition-colors cursor-pointer font-bold"
             title="Remove audit entry from history"
           >
             <Trash2 className="w-3.5 h-3.5" /> Delete
@@ -215,7 +212,7 @@ export const AuditReportPage: React.FC = () => {
 
           <button
             onClick={() => navigate('/')}
-            className="px-3 py-1.5 bg-[#0e2224] hover:bg-[#132d30] text-[#10b981] border border-[#1b3235] rounded-lg text-xs font-mono flex items-center gap-1.5 transition-colors cursor-pointer"
+            className="px-3 py-1.5 bg-theme-surface-sec hover:bg-theme-surface-hover text-theme-accent border border-theme-accent-border rounded-lg text-xs font-mono flex items-center gap-1.5 transition-colors cursor-pointer font-semibold"
           >
             <ArrowLeft className="w-3.5 h-3.5" /> Dashboard
           </button>
@@ -258,7 +255,7 @@ export const AuditReportPage: React.FC = () => {
       </div>
 
       {/* Navigation Tabs (2 Tabs) */}
-      <div className="border-b border-[#1b282a] flex gap-2">
+      <div className="border-b border-theme flex gap-2">
         {[
           { id: 'results', label: 'Cracked Accounts & Hashes' },
           { id: 'chart', label: 'Crack Time Analytics' },
@@ -268,8 +265,8 @@ export const AuditReportPage: React.FC = () => {
             onClick={() => setActiveTab(tab.id as any)}
             className={`px-4 py-2.5 text-xs font-mono font-medium border-b-2 transition-colors cursor-pointer ${
               activeTab === tab.id
-                ? 'border-[#10b981] text-[#10b981] bg-[#101719] font-semibold'
-                : 'border-transparent text-slate-400 hover:text-slate-200'
+                ? 'border-theme-accent text-theme-accent bg-theme-surface font-semibold'
+                : 'border-transparent text-theme-text-sec hover:text-theme-text'
             }`}
           >
             {tab.label}
@@ -288,7 +285,7 @@ export const AuditReportPage: React.FC = () => {
         )}
       </div>
 
-      {/* Delete Confirmation Modal (Item 5) */}
+      {/* Delete Confirmation Modal */}
       <ConfirmModal
         isOpen={isDeleteModalOpen}
         title="Delete Audit Run Entry?"

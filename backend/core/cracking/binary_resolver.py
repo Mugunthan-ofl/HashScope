@@ -16,6 +16,8 @@ from typing import Optional, List, Tuple, Dict, Any
 COMMON_INSTALL_PATHS: Dict[str, Dict[str, List[str]]] = {
     "win32": {
         "hashcat": [
+            r"C:\tools\hashcat-7.1.2\hashcat.exe",
+            r"C:\tools\hashcat\hashcat.exe",
             r"C:\hashcat\hashcat.exe",
             r"C:\hashcat-6.2.6\hashcat.exe",
             r"C:\Program Files\hashcat\hashcat.exe",
@@ -25,6 +27,8 @@ COMMON_INSTALL_PATHS: Dict[str, Dict[str, List[str]]] = {
             os.path.expanduser(r"~\AppData\Local\Programs\hashcat\hashcat.exe"),
         ],
         "john": [
+            r"C:\tools\john\run\john.exe",
+            r"C:\tools\john-1.9.0-jumbo-1-win64\run\john.exe",
             r"C:\john\run\john.exe",
             r"C:\john\john.exe",
             r"C:\Program Files\john\run\john.exe",
@@ -70,6 +74,9 @@ def get_version_string(binary_path: str) -> Optional[str]:
     if not binary_path or not os.path.exists(binary_path):
         return None
 
+    # Set working directory to binary parent directory if possible
+    bin_cwd = os.path.dirname(binary_path) if os.path.isabs(binary_path) and os.path.isfile(binary_path) else None
+
     flags = ["--version", "-v", "--help"]
     for flag in flags:
         try:
@@ -78,7 +85,8 @@ def get_version_string(binary_path: str) -> Optional[str]:
                 capture_output=True,
                 text=True,
                 timeout=3,
-                shell=False
+                shell=False,
+                cwd=bin_cwd
             )
             output = (res.stdout or res.stderr or "").strip()
             if output:
@@ -121,15 +129,7 @@ def resolve_engine_binary(
                 ver = get_version_string(cp_abs)
                 return (cp_abs, checked_paths, ver)
 
-    # 2. Check system PATH via shutil.which()
-    bin_name = f"{engine_key}.exe" if sys.platform == "win32" else engine_key
-    path_found = shutil.which(bin_name) or shutil.which(engine_key)
-    checked_paths.append(f"System PATH ('{engine_key}')")
-    if path_found and os.path.exists(path_found):
-        ver = get_version_string(path_found)
-        return (path_found, checked_paths, ver)
-
-    # 3. Check common OS default installation locations
+    # 2. Check common OS default installation locations FIRST for native .exe on Windows
     os_cat = _get_os_category()
     common_list = COMMON_INSTALL_PATHS.get(os_cat, {}).get(engine_key, [])
     for p in common_list:
@@ -137,6 +137,14 @@ def resolve_engine_binary(
         if os.path.exists(p) and os.path.isfile(p):
             ver = get_version_string(p)
             return (p, checked_paths, ver)
+
+    # 3. Check system PATH via shutil.which()
+    bin_name = f"{engine_key}.exe" if sys.platform == "win32" else engine_key
+    path_found = shutil.which(bin_name) or shutil.which(engine_key)
+    checked_paths.append(f"System PATH ('{engine_key}')")
+    if path_found and os.path.exists(path_found):
+        ver = get_version_string(path_found)
+        return (path_found, checked_paths, ver)
 
     return (None, checked_paths, None)
 

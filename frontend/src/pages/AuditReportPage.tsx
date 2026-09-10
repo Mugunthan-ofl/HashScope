@@ -165,7 +165,6 @@ export const AuditReportPage: React.FC = () => {
           <EngineGuidanceAlert
             errorMessage={errorDetail}
             onRetry={() => navigate('/audit/new')}
-            onSwitchToMock={() => navigate('/audit/new')}
           />
         </div>
       </Layout>

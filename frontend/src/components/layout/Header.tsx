@@ -1,5 +1,5 @@
 import React from 'react';
-import { Menu, Activity, CheckCircle2, XCircle, Sun, Moon } from 'lucide-react';
+import { Menu, Activity, CheckCircle2, XCircle, AlertCircle, Sun, Moon } from 'lucide-react';
 import { useSettings } from '../../context/SettingsContext';
 
 interface HeaderProps {
@@ -8,7 +8,47 @@ interface HeaderProps {
 }
 
 export const Header: React.FC<HeaderProps> = ({ onToggleSidebar, title }) => {
-  const { isBackendOnline, theme, toggleTheme } = useSettings();
+  const { isBackendOnline, engineStatus, theme, toggleTheme } = useSettings();
+
+  const getStatusBadge = () => {
+    if (isBackendOnline === false) {
+      return (
+        <span className="text-theme-error-text flex items-center gap-1.5 font-semibold">
+          <XCircle className="w-3.5 h-3.5 text-theme-error-text" /> Backend Offline
+        </span>
+      );
+    }
+    if (isBackendOnline === null) {
+      return <span className="text-theme-text-muted font-medium">Checking Backend...</span>;
+    }
+
+    const { hashcatFound, johnFound } = engineStatus;
+    if (hashcatFound && johnFound) {
+      return (
+        <span className="text-theme-accent flex items-center gap-1.5 font-semibold">
+          <CheckCircle2 className="w-3.5 h-3.5 text-theme-accent" /> Engines Ready (Hashcat & John)
+        </span>
+      );
+    } else if (hashcatFound && !johnFound) {
+      return (
+        <span className="text-amber-400 flex items-center gap-1.5 font-semibold" title="Hashcat is ready. John the Ripper binary is not installed or configured.">
+          <AlertCircle className="w-3.5 h-3.5 text-amber-400" /> Hashcat Ready (John Missing)
+        </span>
+      );
+    } else if (!hashcatFound && johnFound) {
+      return (
+        <span className="text-amber-400 flex items-center gap-1.5 font-semibold" title="John the Ripper is ready. Hashcat binary is not installed or configured.">
+          <AlertCircle className="w-3.5 h-3.5 text-amber-400" /> John Ready (Hashcat Missing)
+        </span>
+      );
+    } else {
+      return (
+        <span className="text-theme-error-text flex items-center gap-1.5 font-semibold" title="Neither Hashcat nor John binaries were found.">
+          <XCircle className="w-3.5 h-3.5 text-theme-error-text" /> Engines Missing
+        </span>
+      );
+    }
+  };
 
   return (
     <header className="h-16 border-b border-theme bg-theme-header backdrop-blur sticky top-0 z-20 px-4 md:px-8 flex items-center justify-between transition-colors">
@@ -40,20 +80,10 @@ export const Header: React.FC<HeaderProps> = ({ onToggleSidebar, title }) => {
           )}
         </button>
 
-        {/* Backend Engine Status Indicator */}
+        {/* Backend & Engine Status Indicator */}
         <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-theme-surface border border-theme text-xs font-mono">
           <Activity className="w-3.5 h-3.5 text-theme-text-muted" />
-          {isBackendOnline === true ? (
-            <span className="text-theme-accent flex items-center gap-1.5 font-semibold">
-              <CheckCircle2 className="w-3.5 h-3.5 text-theme-accent" /> Engine Ready
-            </span>
-          ) : isBackendOnline === false ? (
-            <span className="text-theme-error-text flex items-center gap-1.5 font-semibold">
-              <XCircle className="w-3.5 h-3.5 text-theme-error-text" /> Engine Unavailable
-            </span>
-          ) : (
-            <span className="text-theme-text-muted font-medium">Checking Engine...</span>
-          )}
+          {getStatusBadge()}
         </div>
       </div>
     </header>

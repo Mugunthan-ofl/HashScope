@@ -13,7 +13,7 @@ class HashInput(BaseModel):
 class AuditConfig(BaseModel):
     """Request payload for triggering an audit job."""
     algorithm: str = Field("md5", description="Target hash algorithm (md5, sha256, ntlm, bcrypt)")
-    engine: str = Field("hashcat", description="Cracking engine choice ('hashcat', 'john', or 'mock')")
+    engine: str = Field("hashcat", description="Cracking engine choice ('hashcat' or 'john')")
     passwords: List[str] = Field(..., description="List of plaintext passwords to audit & crack")
     wordlist_name: str = Field("rockyou.txt", description="Dictionary wordlist identifier")
     context_words: List[str] = Field(default_factory=list, description="Company/domain context words")

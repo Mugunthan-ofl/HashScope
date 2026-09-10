@@ -4,7 +4,7 @@
 
 export interface AuditConfig {
   algorithm: 'md5' | 'sha1' | 'sha256' | 'ntlm' | 'bcrypt';
-  engine: 'hashcat' | 'john' | 'mock';
+  engine: 'hashcat' | 'john';
   passwords: string[];
   wordlist_name: string;
   context_words: string[];

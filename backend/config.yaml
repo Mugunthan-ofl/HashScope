@@ -4,11 +4,11 @@ app:
   debug: true
 engines:
   hashcat:
-    binary_path: C:\Users\Mugunthan\AppData\Local\Temp\pytest-of-Mugunthan\pytest-6\test_engine_config_api_endpoin0\hashcat.exe
+    binary_path: C:\Users\Mugunthan\AppData\Local\Temp\pytest-of-Mugunthan\pytest-10\test_engine_config_api_endpoin0\hashcat.exe
     default_workload_profile: 3
     timeout_seconds: 300
   john:
-    binary_path: ''
+    binary_path: C:\Users\Mugunthan\AppData\Local\Temp\pytest-of-Mugunthan\pytest-10\test_engine_config_api_endpoin0\john.exe
     default_format: raw-md5
     timeout_seconds: 300
 policy:

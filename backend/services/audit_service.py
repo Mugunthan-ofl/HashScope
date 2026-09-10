@@ -37,41 +37,6 @@ from backend.core.policy.policy_report import PolicyEvaluator, PolicyReport
 from backend.core.reporting.report_service import ReportService
 
 
-class MockCrackEngine(CrackEngine):
-    """Mock CrackEngine for fast integration testing without external CLI binaries."""
-
-    @property
-    def engine_name(self) -> str:
-        return "Mock Crack Engine"
-
-    def run(self, hash_file: str, wordlist: str, **kwargs: Any) -> CrackResult:
-        # Simulate cracking passwords present in mock wordlist or common set
-        hash_records: List[HashRecord] = kwargs.get("hash_records", [])
-        cracked_items: List[CrackedHash] = []
-
-        for rec in hash_records:
-            # Simulate fast cracking for weak or common passwords (< 8 chars or common words)
-            if len(rec.plaintext) < 8 or rec.plaintext.lower() in ["password", "123456", "admin", "qwerty"]:
-                cracked_items.append(
-                    CrackedHash(
-                        hash_value=rec.hash_value,
-                        cracked=True,
-                        plaintext=rec.plaintext,
-                        crack_time_seconds=1.5,  # Cracked fast under 60s
-                        hash_type=rec.algorithm
-                    )
-                )
-
-        return CrackResult(
-            engine_name=self.engine_name,
-            total_hashes=len(hash_records),
-            cracked_count=len(cracked_items),
-            cracked_hashes=cracked_items,
-            execution_time_seconds=2.0,
-            status="success"
-        )
-
-
 class AuditService:
     """Service class managing audit job lifecycle and background execution pipeline."""
 
@@ -136,16 +101,8 @@ class AuditService:
             crack_engine: CrackEngine
             engine_paths = get_engine_binary_paths()
 
-            if config.engine == "mock":
-                crack_engine = MockCrackEngine()
-                crack_result = crack_engine.run(
-                    hash_file="mock.hash",
-                    wordlist=config.wordlist_name,
-                    hash_records=hash_records
-                )
-            elif config.engine == "john":
+            if config.engine == "john":
                 crack_engine = JohnEngine(binary_path=engine_paths.get("john_binary_path"))
-                # Create temporary hash file for John
                 with tempfile.NamedTemporaryFile(mode="w", delete=False, suffix=".hash") as tf:
                     for rec in hash_records:
                         tf.write(f"{rec.hash_value}\n")
@@ -160,7 +117,7 @@ class AuditService:
                 finally:
                     if os.path.exists(temp_hash_path):
                         os.remove(temp_hash_path)
-            else:
+            elif config.engine in ["hashcat", ""]:
                 # Default to Hashcat
                 crack_engine = HashcatEngine(binary_path=engine_paths.get("hashcat_binary_path"))
                 with tempfile.NamedTemporaryFile(mode="w", delete=False, suffix=".hash") as tf:
@@ -177,6 +134,8 @@ class AuditService:
                 finally:
                     if os.path.exists(temp_hash_path):
                         os.remove(temp_hash_path)
+            else:
+                raise CrackingEngineError(f"Unsupported cracking engine: '{config.engine}'")
 
             if crack_result.status != "success":
                 err_msg = crack_result.error_message or f"Engine '{crack_engine.engine_name}' reported failure state '{crack_result.status}'."

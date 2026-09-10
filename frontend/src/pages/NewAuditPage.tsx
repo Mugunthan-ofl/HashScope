@@ -19,10 +19,10 @@ const SAMPLE_PASSWORDS = [
 
 export const NewAuditPage: React.FC = () => {
   const navigate = useNavigate();
-  const { saveAuditToHistory, updateAuditHistoryItem, demoMode } = useSettings();
+  const { saveAuditToHistory, updateAuditHistoryItem, engineStatus } = useSettings();
 
   const [algorithm, setAlgorithm] = useState<'md5' | 'sha1' | 'sha256' | 'ntlm' | 'bcrypt'>('md5');
-  const [engine, setEngine] = useState<'mock' | 'hashcat' | 'john'>(demoMode ? 'mock' : 'hashcat');
+  const [engine, setEngine] = useState<'hashcat' | 'john'>('hashcat');
   const [passwordsText, setPasswordsText] = useState<string>(SAMPLE_PASSWORDS.join('\n'));
 
   const [availableWordlists, setAvailableWordlists] = useState<string[]>([
@@ -159,22 +159,26 @@ export const NewAuditPage: React.FC = () => {
           </p>
         </div>
 
-        {error && (
+        {error ? (
           <div className="space-y-2">
             {error.includes('not found') || error.includes('Checked:') || error.includes('Hashcat') || error.includes('John') ? (
               <EngineGuidanceAlert
                 errorMessage={error}
                 onRetry={() => handleSubmit({ preventDefault: () => {} } as React.FormEvent)}
-                onSwitchToMock={() => {
-                  setEngine('mock');
-                  setError(null);
-                }}
               />
             ) : (
               <ErrorAlert message={error} onRetry={() => setError(null)} />
             )}
           </div>
-        )}
+        ) : (engine === 'john' && !engineStatus.johnFound) ? (
+          <EngineGuidanceAlert
+            errorMessage={`John the Ripper binary not found. Checked: [${engineStatus.raw?.john?.checked_paths.join(', ') || 'Custom path, System PATH (john), default directories'}]`}
+          />
+        ) : (engine === 'hashcat' && !engineStatus.hashcatFound) ? (
+          <EngineGuidanceAlert
+            errorMessage={`Hashcat binary not found. Checked: [${engineStatus.raw?.hashcat?.checked_paths.join(', ') || 'Custom path, System PATH (hashcat), default directories'}]`}
+          />
+        ) : null}
 
         {/* Polling / Processing Modal overlay */}
         {submitting && (
@@ -209,17 +213,43 @@ export const NewAuditPage: React.FC = () => {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-medium text-theme-text-sec mb-1 font-mono">
-                  Execution Engine
-                </label>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block text-xs font-medium text-theme-text-sec font-mono">
+                    Execution Engine
+                  </label>
+                  {engine === 'hashcat' ? (
+                    engineStatus.hashcatFound ? (
+                      <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-theme-accent-bg text-theme-accent border border-theme-accent-border font-bold">
+                        ✓ Binary Ready
+                      </span>
+                    ) : (
+                      <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-theme-error-bg text-theme-error-text border border-theme-error-border font-bold">
+                        ⚠ Binary Missing
+                      </span>
+                    )
+                  ) : (
+                    engineStatus.johnFound ? (
+                      <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-theme-accent-bg text-theme-accent border border-theme-accent-border font-bold">
+                        ✓ Binary Ready
+                      </span>
+                    ) : (
+                      <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-theme-error-bg text-theme-error-text border border-theme-error-border font-bold">
+                        ⚠ Binary Missing
+                      </span>
+                    )
+                  )}
+                </div>
                 <select
                   value={engine}
                   onChange={(e: any) => setEngine(e.target.value)}
                   className="w-full px-3 py-2 bg-theme-input border border-theme rounded-lg text-xs text-theme-text font-mono focus:outline-none focus:border-theme-accent cursor-pointer"
                 >
-                  <option value="hashcat">Hashcat CLI Engine</option>
-                  <option value="john">John the Ripper CLI Engine</option>
-                  <option value="mock">Mock Engine (Demo Simulation Mode)</option>
+                  <option value="hashcat">
+                    Hashcat CLI Engine {engineStatus.hashcatFound ? '(Ready)' : '(Not Found)'}
+                  </option>
+                  <option value="john">
+                    John the Ripper CLI Engine {engineStatus.johnFound ? '(Ready)' : '(Not Found)'}
+                  </option>
                 </select>
               </div>
 

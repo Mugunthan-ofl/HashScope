@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { getApiBaseUrl, setApiBaseUrl as saveApiBaseUrl, auditApi } from '../api/auditApi';
+import { EngineCheckResponse } from '../api/types';
 
 export interface AuditHistoryItem {
   audit_id: string;
@@ -11,15 +12,20 @@ export interface AuditHistoryItem {
   cracked_count?: number;
 }
 
+export interface EngineStatusState {
+  hashcatFound: boolean;
+  johnFound: boolean;
+  raw?: EngineCheckResponse;
+}
+
 interface SettingsContextType {
   apiUrl: string;
   setApiUrl: (url: string) => void;
-  demoMode: boolean;
-  setDemoMode: (enabled: boolean) => void;
   theme: 'dark' | 'light';
   toggleTheme: () => void;
   setTheme: (theme: 'dark' | 'light') => void;
   isBackendOnline: boolean | null;
+  engineStatus: EngineStatusState;
   checkBackendHealth: () => Promise<boolean>;
   auditHistory: AuditHistoryItem[];
   saveAuditToHistory: (item: AuditHistoryItem) => void;
@@ -33,8 +39,9 @@ const SettingsContext = createContext<SettingsContextType | undefined>(undefined
 export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [apiUrl, setApiUrlState] = useState<string>(getApiBaseUrl());
   const [isBackendOnline, setIsBackendOnline] = useState<boolean | null>(null);
-  const [demoMode, setDemoModeState] = useState<boolean>(() => {
-    return localStorage.getItem('hashscope_demo_mode') === 'true';
+  const [engineStatus, setEngineStatus] = useState<EngineStatusState>({
+    hashcatFound: false,
+    johnFound: false,
   });
 
   const [theme, setThemeState] = useState<'dark' | 'light'>(() => {
@@ -75,19 +82,28 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     saveApiBaseUrl(url);
   };
 
-  const setDemoMode = (enabled: boolean) => {
-    setDemoModeState(enabled);
-    localStorage.setItem('hashscope_demo_mode', String(enabled));
-  };
-
   const checkBackendHealth = async (): Promise<boolean> => {
     try {
       const res = await auditApi.checkHealth();
       const online = res.status === 'healthy';
       setIsBackendOnline(online);
+
+      if (online) {
+        try {
+          const engines = await auditApi.checkEngines();
+          setEngineStatus({
+            hashcatFound: engines.hashcat?.status === 'found',
+            johnFound: engines.john?.status === 'found',
+            raw: engines,
+          });
+        } catch {
+          // Ignore secondary engine check failures
+        }
+      }
       return online;
     } catch {
       setIsBackendOnline(false);
+      setEngineStatus({ hashcatFound: false, johnFound: false });
       return false;
     }
   };
@@ -138,12 +154,11 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       value={{
         apiUrl,
         setApiUrl,
-        demoMode,
-        setDemoMode,
         theme,
         toggleTheme,
         setTheme,
         isBackendOnline,
+        engineStatus,
         checkBackendHealth,
         auditHistory,
         saveAuditToHistory,

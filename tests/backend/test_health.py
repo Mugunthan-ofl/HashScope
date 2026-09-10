@@ -25,7 +25,7 @@ def test_audit_post_endpoint():
     """Verify POST /api/v1/audit returns 202 Accepted and status payload."""
     payload = {
         "algorithm": "md5",
-        "engine": "mock",
+        "engine": "hashcat",
         "passwords": ["password123"],
         "wordlist_name": "rockyou.txt",
         "min_password_length": 12

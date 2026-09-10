@@ -2,13 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { Layout } from '../components/layout/Layout';
 import { useSettings } from '../context/SettingsContext';
 import { ConfirmModal } from '../components/common/ConfirmModal';
-import { Settings, Server, RefreshCw, Trash2, Cpu, CheckCircle2, XCircle, Wrench, Sun, Moon } from 'lucide-react';
+import { Settings, Server, RefreshCw, Trash2, CheckCircle2, XCircle, Wrench, Sun, Moon } from 'lucide-react';
 
 import { auditApi } from '../api/auditApi';
 import { EngineCheckResponse } from '../api/types';
 
 export const SettingsPage: React.FC = () => {
-  const { apiUrl, setApiUrl, demoMode, setDemoMode, theme, setTheme, isBackendOnline, checkBackendHealth } = useSettings();
+  const { apiUrl, setApiUrl, theme, setTheme, isBackendOnline, checkBackendHealth } = useSettings();
   const [inputUrl, setInputUrl] = useState(apiUrl);
   const [testing, setTesting] = useState(false);
   const [testResult, setTestResult] = useState<string | null>(null);
@@ -339,32 +339,6 @@ export const SettingsPage: React.FC = () => {
                 {testResult}
               </div>
             )}
-          </div>
-
-          {/* Demo Mode Toggle Section */}
-          <div className="pt-6 border-t border-theme space-y-4">
-            <h3 className="text-xs font-semibold text-theme-accent uppercase tracking-wider font-mono border-b border-theme pb-2 flex items-center gap-2">
-              <Cpu className="w-4 h-4 text-theme-accent" /> Execution Modes
-            </h3>
-
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs font-semibold text-theme-text">Demo Simulation Mode</p>
-                <p className="text-xs text-theme-text-sec mt-0.5 font-mono">
-                  Forces mock cracking engine simulation for quick demo previews without requiring CLI binaries.
-                </p>
-              </div>
-
-              <label className="relative inline-flex items-center cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={demoMode}
-                  onChange={(e) => setDemoMode(e.target.checked)}
-                  className="sr-only peer"
-                />
-                <div className="w-11 h-6 bg-theme-input border border-theme peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-slate-400 after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-theme-accent peer-checked:after:bg-white"></div>
-              </label>
-            </div>
           </div>
 
           {/* Maintenance & Reset */}

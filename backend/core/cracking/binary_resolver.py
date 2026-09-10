@@ -31,9 +31,21 @@ COMMON_INSTALL_PATHS: Dict[str, Dict[str, List[str]]] = {
             r"C:\tools\john-1.9.0-jumbo-1-win64\run\john.exe",
             r"C:\john\run\john.exe",
             r"C:\john\john.exe",
+            r"C:\john-jumbo\run\john.exe",
+            r"C:\john-jumbo\john.exe",
+            r"C:\john190j1w\run\john.exe",
             r"C:\Program Files\john\run\john.exe",
+            r"C:\Program Files\john\john.exe",
             r"C:\Program Files (x86)\john\run\john.exe",
+            r"C:\Program Files (x86)\john\john.exe",
+            r"C:\ProgramData\chocolatey\bin\john.exe",
+            r"C:\ProgramData\chocolatey\bin\john-the-ripper.exe",
+            r"C:\ProgramData\chocolatey\lib\john-the-ripper\tools\john-1.9.0-jumbo-1-win64\run\john.exe",
             os.path.expanduser(r"~\scoop\shims\john.exe"),
+            os.path.expanduser(r"~\scoop\apps\john\current\run\john.exe"),
+            os.path.expanduser(r"~\AppData\Local\Programs\john\john.exe"),
+            os.path.expanduser(r"~\Downloads\john-1.9.0-jumbo-1-win64\run\john.exe"),
+            os.path.expanduser(r"~\Desktop\john-1.9.0-jumbo-1-win64\run\john.exe"),
         ],
     },
     "posix": {
@@ -52,6 +64,7 @@ COMMON_INSTALL_PATHS: Dict[str, Dict[str, List[str]]] = {
             "/bin/john",
             "/snap/bin/john",
             "/opt/homebrew/bin/john",
+            "/usr/sbin/john",
         ],
     },
 }
@@ -104,7 +117,10 @@ def get_version_string(binary_path: str) -> Optional[str]:
 def resolve_engine_binary(
     engine: str, custom_path: Optional[str] = None
 ) -> Tuple[Optional[str], List[str], Optional[str]]:
-    """Resolves executable path for cracking engine in 3-tier order.
+    """Resolves executable path for cracking engine in 3-tier order:
+    (a) Custom path configured in Settings / config.yaml
+    (b) System PATH via shutil.which() (checking both name and name.exe)
+    (c) Common default OS installation directories for Windows, Linux, and macOS.
 
     Args:
         engine (str): 'hashcat' or 'john'.
@@ -129,7 +145,19 @@ def resolve_engine_binary(
                 ver = get_version_string(cp_abs)
                 return (cp_abs, checked_paths, ver)
 
-    # 2. Check common OS default installation locations FIRST for native .exe on Windows
+    # 2. Check system PATH via shutil.which() - checking both 'john' and 'john.exe' (or hashcat / hashcat.exe)
+    checked_paths.append(f"System PATH ('{engine_key}')")
+    names_to_check = [f"{engine_key}.exe", engine_key] if sys.platform == "win32" else [engine_key, f"{engine_key}.exe"]
+    for name in names_to_check:
+        path_found = shutil.which(name)
+        if path_found and os.path.exists(path_found) and os.path.isfile(path_found):
+            # On Windows, ignore batch wrappers (.bat / .cmd) so native .exe binaries are preferred
+            if sys.platform == "win32" and path_found.lower().endswith((".bat", ".cmd")):
+                continue
+            ver = get_version_string(path_found)
+            return (path_found, checked_paths, ver)
+
+    # 3. Check common OS default installation locations
     os_cat = _get_os_category()
     common_list = COMMON_INSTALL_PATHS.get(os_cat, {}).get(engine_key, [])
     for p in common_list:
@@ -137,14 +165,6 @@ def resolve_engine_binary(
         if os.path.exists(p) and os.path.isfile(p):
             ver = get_version_string(p)
             return (p, checked_paths, ver)
-
-    # 3. Check system PATH via shutil.which()
-    bin_name = f"{engine_key}.exe" if sys.platform == "win32" else engine_key
-    path_found = shutil.which(bin_name) or shutil.which(engine_key)
-    checked_paths.append(f"System PATH ('{engine_key}')")
-    if path_found and os.path.exists(path_found):
-        ver = get_version_string(path_found)
-        return (path_found, checked_paths, ver)
 
     return (None, checked_paths, None)
 

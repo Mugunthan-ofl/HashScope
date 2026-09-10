@@ -5,13 +5,11 @@ import { AlertTriangle, Terminal, Download, Settings, Play, ChevronDown, Chevron
 interface EngineGuidanceAlertProps {
   errorMessage: string;
   onRetry?: () => void;
-  onSwitchToMock?: () => void;
 }
 
 export const EngineGuidanceAlert: React.FC<EngineGuidanceAlertProps> = ({
   errorMessage,
   onRetry,
-  onSwitchToMock,
 }) => {
   const navigate = useNavigate();
   const [showCheckedPaths, setShowCheckedPaths] = useState(false);
@@ -21,6 +19,9 @@ export const EngineGuidanceAlert: React.FC<EngineGuidanceAlertProps> = ({
   const isWindows = userAgent.includes('win');
   const isMac = userAgent.includes('mac');
   const isLinux = !isWindows && !isMac;
+
+  // Detect missing engine from errorMessage
+  const isJohn = errorMessage.toLowerCase().includes('john');
 
   // Extract checked paths list if present in error message string
   const checkedIndex = errorMessage.indexOf('Checked: [');
@@ -36,7 +37,7 @@ export const EngineGuidanceAlert: React.FC<EngineGuidanceAlertProps> = ({
         </div>
         <div className="flex-1 min-w-0">
           <h3 className="text-sm font-bold text-theme-error-text flex items-center gap-2">
-            Cracking Engine Binary Not Found
+            {isJohn ? 'John the Ripper Binary Not Found' : 'Cracking Engine Binary Not Found'}
           </h3>
           <p className="text-xs text-theme-text-sec mt-1 leading-relaxed font-mono">
             {mainMessage}
@@ -67,7 +68,7 @@ export const EngineGuidanceAlert: React.FC<EngineGuidanceAlertProps> = ({
       <div className="bg-theme-surface-sec border border-theme rounded-lg p-4 space-y-3">
         <div className="flex items-center justify-between border-b border-theme pb-2">
           <span className="text-xs font-semibold text-theme-accent uppercase tracking-wider font-mono flex items-center gap-1.5">
-            <Download className="w-3.5 h-3.5" /> Recommended Installation Steps
+            <Download className="w-3.5 h-3.5" /> Recommended Installation Steps ({isJohn ? 'John the Ripper' : 'Hashcat'})
           </span>
           <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-theme-accent-bg text-theme-accent-text border border-theme-accent-border">
             Detected OS: {isWindows ? 'Windows' : isMac ? 'macOS' : 'Linux'}
@@ -80,21 +81,39 @@ export const EngineGuidanceAlert: React.FC<EngineGuidanceAlertProps> = ({
             <p className="font-bold text-theme-accent flex items-center gap-1.5 mb-1">
               <Terminal className="w-3.5 h-3.5" /> Windows:
             </p>
-            <ul className="list-disc list-inside space-y-1 text-[11px] pl-1">
-              <li>
-                Download official package from{' '}
-                <a
-                  href="https://hashcat.net/hashcat/"
-                  target="_blank"
-                  rel="noreferrer"
-                  className="text-theme-accent underline hover:text-theme-accent-hover font-semibold"
-                >
-                  hashcat.net/hashcat
-                </a>
-              </li>
-              <li>Or install via Chocolatey: <code className="bg-theme-surface px-1 py-0.5 rounded text-theme-warning-text font-bold">choco install hashcat</code></li>
-              <li>Or install via Scoop: <code className="bg-theme-surface px-1 py-0.5 rounded text-theme-warning-text font-bold">scoop install hashcat</code></li>
-            </ul>
+            {isJohn ? (
+              <ul className="list-disc list-inside space-y-1 text-[11px] pl-1">
+                <li>
+                  Download official package from{' '}
+                  <a
+                    href="https://www.openwall.com/john/"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-theme-accent underline hover:text-theme-accent-hover font-semibold"
+                  >
+                    openwall.com/john
+                  </a>
+                </li>
+                <li>Or install via Chocolatey: <code className="bg-theme-surface px-1 py-0.5 rounded text-theme-warning-text font-bold">choco install john-the-ripper</code></li>
+                <li>Or install via Scoop: <code className="bg-theme-surface px-1 py-0.5 rounded text-theme-warning-text font-bold">scoop install john</code></li>
+              </ul>
+            ) : (
+              <ul className="list-disc list-inside space-y-1 text-[11px] pl-1">
+                <li>
+                  Download official package from{' '}
+                  <a
+                    href="https://hashcat.net/hashcat/"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-theme-accent underline hover:text-theme-accent-hover font-semibold"
+                  >
+                    hashcat.net/hashcat
+                  </a>
+                </li>
+                <li>Or install via Chocolatey: <code className="bg-theme-surface px-1 py-0.5 rounded text-theme-warning-text font-bold">choco install hashcat</code></li>
+                <li>Or install via Scoop: <code className="bg-theme-surface px-1 py-0.5 rounded text-theme-warning-text font-bold">scoop install hashcat</code></li>
+              </ul>
+            )}
           </div>
 
           {/* Linux Section */}
@@ -102,10 +121,17 @@ export const EngineGuidanceAlert: React.FC<EngineGuidanceAlertProps> = ({
             <p className="font-bold text-theme-accent flex items-center gap-1.5 mb-1">
               <Terminal className="w-3.5 h-3.5" /> Linux (Debian / Ubuntu / Fedora):
             </p>
-            <ul className="list-disc list-inside space-y-1 text-[11px] pl-1">
-              <li>Debian/Ubuntu: <code className="bg-theme-surface px-1 py-0.5 rounded text-theme-warning-text font-bold">sudo apt update && sudo apt install hashcat john</code></li>
-              <li>Fedora/RHEL: <code className="bg-theme-surface px-1 py-0.5 rounded text-theme-warning-text font-bold">sudo dnf install hashcat john</code></li>
-            </ul>
+            {isJohn ? (
+              <ul className="list-disc list-inside space-y-1 text-[11px] pl-1">
+                <li>Debian/Ubuntu: <code className="bg-theme-surface px-1 py-0.5 rounded text-theme-warning-text font-bold">sudo apt update && sudo apt install john</code></li>
+                <li>Fedora/RHEL: <code className="bg-theme-surface px-1 py-0.5 rounded text-theme-warning-text font-bold">sudo dnf install john</code></li>
+              </ul>
+            ) : (
+              <ul className="list-disc list-inside space-y-1 text-[11px] pl-1">
+                <li>Debian/Ubuntu: <code className="bg-theme-surface px-1 py-0.5 rounded text-theme-warning-text font-bold">sudo apt update && sudo apt install hashcat</code></li>
+                <li>Fedora/RHEL: <code className="bg-theme-surface px-1 py-0.5 rounded text-theme-warning-text font-bold">sudo dnf install hashcat</code></li>
+              </ul>
+            )}
           </div>
 
           {/* macOS Section */}
@@ -114,7 +140,7 @@ export const EngineGuidanceAlert: React.FC<EngineGuidanceAlertProps> = ({
               <Terminal className="w-3.5 h-3.5" /> macOS (Homebrew):
             </p>
             <p className="text-[11px] pl-1">
-              Run: <code className="bg-theme-surface px-1 py-0.5 rounded text-theme-warning-text font-bold">brew install hashcat john</code>
+              Run: <code className="bg-theme-surface px-1 py-0.5 rounded text-theme-warning-text font-bold">{isJohn ? 'brew install john-jumbo' : 'brew install hashcat'}</code>
             </p>
           </div>
         </div>
@@ -141,19 +167,6 @@ export const EngineGuidanceAlert: React.FC<EngineGuidanceAlertProps> = ({
             <Settings className="w-3.5 h-3.5" /> Configure Path in Settings
           </button>
         </div>
-
-        {onSwitchToMock && (
-          <div className="flex items-center gap-2">
-            <span className="text-[11px] text-theme-text-sec font-mono hidden sm:inline">Or preview as demo:</span>
-            <button
-              type="button"
-              onClick={onSwitchToMock}
-              className="px-3 py-1.5 bg-theme-surface-sec hover:bg-theme-surface-hover text-theme-text border border-theme rounded-lg text-xs font-mono transition-colors cursor-pointer"
-            >
-              Run Demo Mode (Mock Engine)
-            </button>
-          </div>
-        )}
       </div>
     </div>
   );

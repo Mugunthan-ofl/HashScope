@@ -1,6 +1,7 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { LayoutDashboard, PlusCircle, Settings, ShieldCheck } from 'lucide-react';
+import { useSettings } from '../../context/SettingsContext';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -8,10 +9,13 @@ interface SidebarProps {
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
+  const { isAdmin } = useSettings();
+
+  // Show Settings link ONLY for authenticated admin users
   const navItems = [
     { to: '/', label: 'Dashboard', icon: LayoutDashboard },
     { to: '/audit/new', label: 'New Audit', icon: PlusCircle },
-    { to: '/settings', label: 'Settings', icon: Settings },
+    ...(isAdmin ? [{ to: '/settings', label: 'Settings', icon: Settings }] : []),
   ];
 
   const sidebarContent = (
@@ -54,9 +58,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
         })}
       </nav>
 
-      {/* System Status Footer */}
-      <div className="p-4 border-t border-theme">
-        <div className="px-3 py-2 rounded-lg bg-theme-surface-sec border border-theme text-[11px] text-theme-text-sec font-mono flex items-center justify-between">
+      {/* Footer */}
+      <div className="p-4 border-t border-theme space-y-2">
+        <div className="px-3 py-1.5 rounded-lg bg-theme-surface-sec border border-theme text-[10px] text-theme-text-sec font-mono flex items-center justify-between">
           <span>Engine v0.1.0</span>
           <span className="w-2 h-2 rounded-full bg-theme-accent animate-pulse"></span>
         </div>

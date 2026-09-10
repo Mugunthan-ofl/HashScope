@@ -32,6 +32,10 @@ interface SettingsContextType {
   updateAuditHistoryItem: (auditId: string, updates: Partial<AuditHistoryItem>) => void;
   removeAuditFromHistory: (auditId: string) => void;
   clearAuditHistory: () => void;
+  adminToken: string | null;
+  isAdmin: boolean;
+  loginAdmin: (password: string) => Promise<boolean>;
+  logoutAdmin: () => void;
 }
 
 const SettingsContext = createContext<SettingsContextType | undefined>(undefined);
@@ -43,6 +47,26 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     hashcatFound: false,
     johnFound: false,
   });
+
+  const [adminToken, setAdminToken] = useState<string | null>(() => {
+    return sessionStorage.getItem('hashscope_admin_token');
+  });
+  const isAdmin = !!adminToken;
+
+  const loginAdmin = async (password: string): Promise<boolean> => {
+    const res = await auditApi.adminLogin(password);
+    if (res && res.token) {
+      sessionStorage.setItem('hashscope_admin_token', res.token);
+      setAdminToken(res.token);
+      return true;
+    }
+    return false;
+  };
+
+  const logoutAdmin = () => {
+    sessionStorage.removeItem('hashscope_admin_token');
+    setAdminToken(null);
+  };
 
   const [theme, setThemeState] = useState<'dark' | 'light'>(() => {
     const saved = localStorage.getItem('hashscope_theme');
@@ -165,6 +189,10 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         updateAuditHistoryItem,
         removeAuditFromHistory,
         clearAuditHistory,
+        adminToken,
+        isAdmin,
+        loginAdmin,
+        logoutAdmin,
       }}
     >
       {children}

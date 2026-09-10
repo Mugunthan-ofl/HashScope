@@ -2,13 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { Layout } from '../components/layout/Layout';
 import { useSettings } from '../context/SettingsContext';
 import { ConfirmModal } from '../components/common/ConfirmModal';
-import { Settings, Server, RefreshCw, Trash2, CheckCircle2, XCircle, Wrench, Sun, Moon } from 'lucide-react';
+import { Settings, Server, RefreshCw, Trash2, CheckCircle2, XCircle, Wrench, Sun, Moon, LogOut } from 'lucide-react';
 
 import { auditApi } from '../api/auditApi';
 import { EngineCheckResponse } from '../api/types';
 
 export const SettingsPage: React.FC = () => {
-  const { apiUrl, setApiUrl, theme, setTheme, isBackendOnline, checkBackendHealth } = useSettings();
+  const { apiUrl, setApiUrl, theme, setTheme, isBackendOnline, checkBackendHealth, logoutAdmin } = useSettings();
   const [inputUrl, setInputUrl] = useState(apiUrl);
   const [testing, setTesting] = useState(false);
   const [testResult, setTestResult] = useState<string | null>(null);
@@ -89,14 +89,24 @@ export const SettingsPage: React.FC = () => {
   return (
     <Layout title="System & API Configuration">
       <div className="max-w-3xl mx-auto space-y-6 font-sans">
-        {/* Header Title */}
-        <div className="bg-theme-surface border border-theme rounded-xl p-5 shadow-theme-md transition-colors">
-          <h2 className="text-base font-bold text-theme-text flex items-center gap-2">
-            <Settings className="w-4 h-4 text-theme-accent" /> HashScope Settings & Setup Validation
-          </h2>
-          <p className="text-xs text-theme-text-sec mt-1 font-mono">
-            Configure backend connection endpoints, custom cracking engine binary paths, themes, and validate CLI tool installations.
-          </p>
+        {/* Header Title with Admin Logout */}
+        <div className="bg-theme-surface border border-theme rounded-xl p-5 shadow-theme-md transition-colors flex items-center justify-between">
+          <div>
+            <h2 className="text-base font-bold text-theme-text flex items-center gap-2">
+              <Settings className="w-4 h-4 text-theme-accent" /> HashScope Settings & Setup Validation
+            </h2>
+            <p className="text-xs text-theme-text-sec mt-1 font-mono">
+              Configure backend connection endpoints, custom cracking engine binary paths, themes, and validate CLI tool installations.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={logoutAdmin}
+            className="px-3 py-1.5 bg-theme-error-bg hover:opacity-90 border border-theme-error-border text-theme-error-text rounded-lg text-xs font-mono flex items-center gap-1.5 transition-colors cursor-pointer font-bold shrink-0 ml-4"
+            title="End Admin Session"
+          >
+            <LogOut className="w-3.5 h-3.5" /> Log Out
+          </button>
         </div>
 
         {/* Section 0: Appearance / Theme Configuration */}

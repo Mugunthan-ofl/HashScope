@@ -4,6 +4,8 @@ import DashboardPage from './pages/DashboardPage';
 import NewAuditPage from './pages/NewAuditPage';
 import AuditReportPage from './pages/AuditReportPage';
 import SettingsPage from './pages/SettingsPage';
+import AdminLoginPage from './pages/AdminLoginPage';
+import ProtectedAdminRoute from './components/auth/ProtectedAdminRoute';
 
 export function App() {
   return (
@@ -11,9 +13,17 @@ export function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<DashboardPage />} />
+          <Route path="/admin" element={<AdminLoginPage />} />
           <Route path="/audit/new" element={<NewAuditPage />} />
           <Route path="/audit/:id" element={<AuditReportPage />} />
-          <Route path="/settings" element={<SettingsPage />} />
+          <Route
+            path="/settings"
+            element={
+              <ProtectedAdminRoute>
+                <SettingsPage />
+              </ProtectedAdminRoute>
+            }
+          />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </BrowserRouter>

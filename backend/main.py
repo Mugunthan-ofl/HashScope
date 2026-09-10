@@ -12,6 +12,7 @@ if ROOT_DIR not in sys.path:
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from backend.api.routes.audit import router as audit_router
+from backend.api.routes.auth import router as auth_router
 
 # Load optional config.yaml
 CONFIG_PATH = os.path.join(os.path.dirname(__file__), "config.yaml")
@@ -40,6 +41,7 @@ from backend.core.config_manager import get_engine_binary_paths
 
 # Include API routes
 app.include_router(audit_router, prefix="/api/v1")
+app.include_router(auth_router, prefix="/api/v1")
 
 
 @app.on_event("startup")

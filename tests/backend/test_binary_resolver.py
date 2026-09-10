@@ -127,9 +127,14 @@ def test_engine_check_api_endpoint():
 
 
 def test_engine_config_api_endpoints(tmp_path):
-    """Verify GET and POST /api/v1/audit/engines/config endpoints."""
+    """Verify GET and POST /api/v1/audit/engines/config endpoints with admin authentication."""
+    password = os.getenv("ADMIN_PASSWORD", "admin")
+    login_res = client.post("/api/v1/auth/admin-login", json={"password": password})
+    token = login_res.json()["token"]
+    headers = {"Authorization": f"Bearer {token}"}
+
     # Test GET config
-    get_res = client.get("/api/v1/audit/engines/config")
+    get_res = client.get("/api/v1/audit/engines/config", headers=headers)
     assert get_res.status_code == 200
     assert "hashcat_binary_path" in get_res.json()
     assert "john_binary_path" in get_res.json()
@@ -139,7 +144,8 @@ def test_engine_config_api_endpoints(tmp_path):
     fake_custom_john = str(tmp_path / "john.exe")
     post_res = client.post(
         "/api/v1/audit/engines/config",
-        json={"hashcat_binary_path": fake_custom_hashcat, "john_binary_path": fake_custom_john}
+        json={"hashcat_binary_path": fake_custom_hashcat, "john_binary_path": fake_custom_john},
+        headers=headers
     )
     assert post_res.status_code == 200
     data = post_res.json()

@@ -25,10 +25,16 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
   const baseUrl = getApiBaseUrl().replace(/\/$/, '');
   const url = `${baseUrl}${endpoint}`;
 
-  const headers = {
+  const adminToken = sessionStorage.getItem('hashscope_admin_token');
+
+  const headers: Record<string, string> = {
     'Content-Type': 'application/json',
-    ...(options.headers || {}),
+    ...(options.headers as Record<string, string> || {}),
   };
+
+  if (adminToken) {
+    headers['Authorization'] = `Bearer ${adminToken}`;
+  }
 
   let response: Response;
   try {
@@ -56,6 +62,15 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
 }
 
 export const auditApi = {
+  /**
+   * Admin Login authentication
+   */
+  async adminLogin(password: string): Promise<{ token: string; token_type: string }> {
+    return request<{ token: string; token_type: string }>('/api/v1/auth/admin-login', {
+      method: 'POST',
+      body: JSON.stringify({ password }),
+    });
+  },
   /**
    * Health check
    */

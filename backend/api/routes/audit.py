@@ -15,6 +15,7 @@ from backend.api.schemas.audit import (
 )
 from backend.core.config_manager import get_engine_binary_paths, update_engine_binary_paths
 from backend.services.audit_service import AuditService
+from backend.core.auth import get_current_admin
 
 router = APIRouter(prefix="/audit", tags=["Audit"])
 
@@ -43,8 +44,10 @@ async def check_engines(
 
 
 @router.get("/engines/config", response_model=EngineConfigSchema)
-async def get_engine_config():
-    """Retrieves currently configured custom binary paths for cracking engines."""
+async def get_engine_config(
+    admin: dict = Depends(get_current_admin),
+):
+    """Retrieves currently configured custom binary paths for cracking engines (Admin Protected)."""
     paths = get_engine_binary_paths()
     return EngineConfigSchema(
         hashcat_binary_path=paths.get("hashcat_binary_path", ""),
@@ -56,8 +59,9 @@ async def get_engine_config():
 async def update_engine_config(
     payload: EngineConfigSchema,
     audit_service: AuditService = Depends(get_audit_service),
+    admin: dict = Depends(get_current_admin),
 ):
-    """Updates custom binary paths in config.yaml and re-runs binary detection check."""
+    """Updates custom binary paths in config.yaml and re-runs binary detection check (Admin Protected)."""
     update_engine_binary_paths(
         hashcat_path=payload.hashcat_binary_path,
         john_path=payload.john_binary_path

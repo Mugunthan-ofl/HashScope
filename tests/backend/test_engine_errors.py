@@ -35,8 +35,10 @@ def test_hashcat_missing_binary_returns_tool_not_found(mock_resolve):
     assert "not found" in res.error_message.lower()
 
 
-def test_john_missing_binary_returns_tool_not_found():
+@patch("backend.core.cracking.john_engine.resolve_engine_binary")
+def test_john_missing_binary_returns_tool_not_found(mock_resolve):
     """Verify missing john binary returns tool_not_found error state."""
+    mock_resolve.return_value = (None, ["Checked custom path"], None)
     engine = JohnEngine(binary_path="nonexistent_john_binary_xyz")
     res = engine.run("dummy.hash", "dummy.txt", algorithm="md5")
 
